@@ -1,0 +1,14 @@
+{
+	"configurations": [
+		{
+			"name": "GameEditor Editor Win64 Development (Game)",
+			"intelliSenseMode": "msvc-x64",
+			"compileCommands": "C:\\Unreal Projects\\AAAGame\\.vscode\\compileCommands_Game.json"
+		},
+		{
+			"name": "Win32",
+			"intelliSenseMode": "msvc-x64",
+			"compileCommands": "C:\\Unreal Projects\\AAAGame\\.vscode\\compileCommands_Default.json"
+		}
+	]
+}

@@ -6,8 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "ActorItem.generated.h"
 
-
+class USphereComponent;
 UCLASS()
+
 class GAME_API AActorItem : public AActor
 {
 	GENERATED_BODY()
@@ -20,17 +21,43 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UStaticMeshComponent* staticMesh;
+
+	UFUNCTION(BlueprintPure)
+	float TransformSin();
+
+	UFUNCTION()
+	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	virtual void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	
+
+	
+
 private:
+	UPROPERTY(EditAnywhere)
 	float sinValue;
+	UPROPERTY(EditAnywhere)
 	float amptitueOfSin = 1;
+	UPROPERTY(EditAnywhere)
 	float waveSpeed=10;
 
+	
+
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* staticMesh;
+	USphereComponent* sphere;
+
+	
+	
+
 
 
 

@@ -19,4 +19,5 @@ void AWeapon::Equip(USceneComponent* inParent, FName socketname)
 {
 	FAttachmentTransformRules transformRules(EAttachmentRule::SnapToTarget, true);
 	staticMesh->AttachToComponent(inParent, transformRules, socketname);
+	itemState = EItemState::EIS_Equipped;
 }

@@ -26,6 +26,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	void EKeyPressed();
+	void AttackWithSword();
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
 
 public:	
 	// Called every frame
@@ -39,6 +42,7 @@ private:
 	void Turn(float value);
 	void LookUp(float value);
 	void MoveRight(float value);
+	void PlayAttackMontage();
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* cameraArm;
@@ -53,6 +57,14 @@ private:
 	AActorItem* overlapingItem;
 
 	ECharacterState characterState = ECharacterState::ECS_Unequiped;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Anim Monatge")
+	UAnimMontage* echoAttackMontage;
+
+	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
+	EActionState actionState = EActionState::EAS_Unoccupied;
+
+	
 
 public:
 	FORCEINLINE  void SetOverlapingItem(AActorItem* item) { overlapingItem = item; }

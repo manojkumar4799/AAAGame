@@ -45,6 +45,21 @@ void AGameCharacter::EKeyPressed()
 	}
 }
 
+void AGameCharacter::AttackWithSword()
+{
+	if (actionState == EActionState::EAS_Unoccupied && characterState== ECharacterState::ECS_Equiped) {
+		PlayAttackMontage();
+		actionState = EActionState::EAS_Attacking;
+	}
+	
+
+}
+
+void AGameCharacter::AttackEnd()
+{
+	actionState = EActionState::EAS_Unoccupied;
+}
+
 // Called every frame
 void AGameCharacter::Tick(float DeltaTime)
 {
@@ -63,11 +78,13 @@ void AGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(FName("Equip"), IE_Pressed, this, &AGameCharacter::EKeyPressed);
+	PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &AGameCharacter::AttackWithSword);
 
 }
 
 void AGameCharacter::MoveForward(float value)
 {
+	if (actionState == EActionState::EAS_Attacking) return;
 	if (Controller && value != 0)
 	{
 
@@ -90,6 +107,7 @@ void AGameCharacter::LookUp(float value)
 
 void AGameCharacter::MoveRight(float value)
 {
+	if (actionState == EActionState::EAS_Attacking) return;
 	if (Controller && value != 0) {
 		
 		FRotator controllerRotation = GetControlRotation();
@@ -98,5 +116,30 @@ void AGameCharacter::MoveRight(float value)
 		FVector direction = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(direction, value);
 	}	
+}
+
+void AGameCharacter::PlayAttackMontage()
+{
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+
+	if (animInstance && echoAttackMontage) {
+
+		animInstance->Montage_Play(echoAttackMontage);
+		int32 sectionToPlay = FMath::RandRange(0, 1);
+		FName sectionName = FName();
+
+		switch (sectionToPlay)
+		{
+		case 0:
+			sectionName = FName("Attack1");
+			break;
+
+		default:
+			sectionName = FName("Attack2");
+			break;
+		}
+
+		animInstance->Montage_JumpToSection(sectionName, echoAttackMontage);
+	}
 }
 

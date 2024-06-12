@@ -7,6 +7,12 @@
 #include "ActorItem.generated.h"
 
 class USphereComponent;
+
+enum class EItemState :uint8 {
+
+	EIS_Hovering,
+	EIS_Equipped
+};
 UCLASS()
 
 class GAME_API AActorItem : public AActor
@@ -32,7 +38,7 @@ protected:
 	UFUNCTION()
 	virtual void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	
+	EItemState itemState = EItemState::EIS_Hovering;
 
 public:	
 	// Called every frame

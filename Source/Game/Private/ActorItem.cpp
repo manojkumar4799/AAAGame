@@ -56,10 +56,14 @@ void AActorItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	float spinRate = 100;
 	sinValue += DeltaTime;
-	//float deltaZ = amptitueOfSin * FMath::Sin(sinValue * waveSpeed); 
+	if (itemState == EItemState::EIS_Hovering) {
 
-	//AddActorWorldOffset(FVector(0.f, 0.f, deltaZ));
-	//AddActorWorldRotation(FRotator(0, spinRate * DeltaTime, 0));
+		float deltaZ = amptitueOfSin * FMath::Sin(sinValue * waveSpeed);
+
+		AddActorWorldOffset(FVector(0.f, 0.f, deltaZ));
+		AddActorWorldRotation(FRotator(0, spinRate * DeltaTime, 0));
+	}
+	
 	//Draw_Sphere(GetActorLocation())
 	//Draw_Vector(GetActorLocation(),GetActorLocation()+ GetActorForwardVector()*200)
 		

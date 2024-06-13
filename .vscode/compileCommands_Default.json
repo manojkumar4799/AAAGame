@@ -1,0 +1,27 @@
+[
+	{
+		"file": "C:\\Unreal Projects\\AAAGame\\Source\\Game\\Game.Build.cs",
+		"command": "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe\" @\"C:\\Unreal Projects\\AAAGame\\.vscode\\compileCommands_Default\\Game.211.rsp\"",
+		"directory": "D:\\Unreal Engine\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Unreal Projects\\AAAGame\\Source\\Game\\Game.cpp",
+		"command": "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe\" @\"C:\\Unreal Projects\\AAAGame\\.vscode\\compileCommands_Default\\Game.211.rsp\"",
+		"directory": "D:\\Unreal Engine\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Unreal Projects\\AAAGame\\Source\\Game\\Game.h",
+		"command": "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe\" @\"C:\\Unreal Projects\\AAAGame\\.vscode\\compileCommands_Default\\Game.211.rsp\"",
+		"directory": "D:\\Unreal Engine\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Unreal Projects\\AAAGame\\Source\\Game\\Private\\Item.cpp",
+		"command": "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe\" @\"C:\\Unreal Projects\\AAAGame\\.vscode\\compileCommands_Default\\Game.211.rsp\"",
+		"directory": "D:\\Unreal Engine\\UE_5.0\\Engine\\Source"
+	},
+	{
+		"file": "C:\\Unreal Projects\\AAAGame\\Source\\Game\\Public\\Item.h",
+		"command": "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe\" @\"C:\\Unreal Projects\\AAAGame\\.vscode\\compileCommands_Default\\Game.211.rsp\"",
+		"directory": "D:\\Unreal Engine\\UE_5.0\\Engine\\Source"
+	}
+]

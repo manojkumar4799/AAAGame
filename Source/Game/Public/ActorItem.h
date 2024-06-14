@@ -30,6 +30,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* staticMesh;
 
+	
+
 	UFUNCTION(BlueprintPure)
 	float TransformSin();
 
@@ -40,6 +42,8 @@ protected:
 
 	EItemState itemState = EItemState::EIS_Hovering;
 
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* sphere;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -58,8 +62,7 @@ private:
 
 	
 
-	UPROPERTY(VisibleAnywhere)
-	USphereComponent* sphere;
+	
 
 	
 	

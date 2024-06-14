@@ -10,6 +10,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class AActorItem;
+class AWeapon;
 
 
 
@@ -30,6 +31,15 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
 
+	UFUNCTION(BlueprintCallable)
+	void EquipSword();
+
+	UFUNCTION(BlueprintCallable)
+	void Unarm();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishEquipping();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -43,6 +53,7 @@ private:
 	void LookUp(float value);
 	void MoveRight(float value);
 	void PlayAttackMontage();
+	void PlayEquipMontage(FName sectionName);
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* cameraArm;
@@ -56,13 +67,22 @@ private:
 	UPROPERTY(VisibleInstanceOnly)
 	AActorItem* overlapingItem;
 
+	
+
 	ECharacterState characterState = ECharacterState::ECS_Unequiped;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Anim Monatge")
 	UAnimMontage* echoAttackMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Anim Monatge")
+	UAnimMontage* echoEquipMontage;
+
+
 	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
 	EActionState actionState = EActionState::EAS_Unoccupied;
+
+	UPROPERTY(VisibleAnywhere)
+	AWeapon* currentWeapon;
 
 	
 

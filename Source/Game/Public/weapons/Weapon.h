@@ -21,5 +21,12 @@ protected:
 public:
 
 	void Equip(USceneComponent* inParent, FName socketname);
+
+	void AttachMeshToSocket(USceneComponent* inParent, const FName& socketname);
+
+private:
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* bladeSound;
 	
 };

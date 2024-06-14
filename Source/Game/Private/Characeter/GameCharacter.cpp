@@ -42,6 +42,19 @@ void AGameCharacter::EKeyPressed()
 
 		weapon->Equip(GetMesh(), FName("RightHandSocket"));
 		characterState = ECharacterState::ECS_Equiped;
+		currentWeapon = weapon;
+		overlapingItem = nullptr;
+	}
+	else if (characterState == ECharacterState::ECS_Equiped && actionState == EActionState::EAS_Unoccupied) {
+
+		PlayEquipMontage(FName("Unequip"));
+		characterState = ECharacterState::ECS_Unequiped;
+		actionState = EActionState::EAS_Equipping;
+	}
+	else if (currentWeapon && characterState == ECharacterState::ECS_Unequiped && actionState == EActionState::EAS_Unoccupied) {
+		PlayEquipMontage(FName("Equip"));
+		characterState = ECharacterState::ECS_Equiped;
+		actionState = EActionState::EAS_Equipping;
 	}
 }
 
@@ -84,7 +97,7 @@ void AGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AGameCharacter::MoveForward(float value)
 {
-	if (actionState == EActionState::EAS_Attacking) return;
+	if (actionState != EActionState::EAS_Unoccupied) return;
 	if (Controller && value != 0)
 	{
 
@@ -107,7 +120,7 @@ void AGameCharacter::LookUp(float value)
 
 void AGameCharacter::MoveRight(float value)
 {
-	if (actionState == EActionState::EAS_Attacking) return;
+	if (actionState != EActionState::EAS_Unoccupied) return;
 	if (Controller && value != 0) {
 		
 		FRotator controllerRotation = GetControlRotation();
@@ -141,5 +154,32 @@ void AGameCharacter::PlayAttackMontage()
 
 		animInstance->Montage_JumpToSection(sectionName, echoAttackMontage);
 	}
+}
+
+void AGameCharacter::PlayEquipMontage(FName sectionName)
+{
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (!animInstance) return;
+	animInstance->Montage_Play(echoEquipMontage);
+	animInstance->Montage_JumpToSection(sectionName, echoEquipMontage);
+	
+}
+
+//called from notifier and blueprint
+void AGameCharacter::EquipSword()
+{
+	currentWeapon->AttachMeshToSocket(GetMesh(), FName("RightHandSocket"));
+}
+
+//called from notifier and blueprint
+void AGameCharacter::Unarm()
+{
+	currentWeapon->AttachMeshToSocket(GetMesh(), FName("WeaponSocket"));
+}
+
+//called from notifier and blueprint
+void AGameCharacter::FinishEquipping()
+{
+	actionState = EActionState::EAS_Unoccupied;
 }
 

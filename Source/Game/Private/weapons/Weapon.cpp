@@ -5,7 +5,20 @@
 #include "Characeter/GameCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 
+
+AWeapon::AWeapon()
+{
+
+	boxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxColliderComp"));
+	boxCollider->SetupAttachment(GetRootComponent());
+
+	boxTraceStartPoint = CreateDefaultSubobject<USceneComponent>(TEXT("StartPoint"));
+	boxTraceStartPoint->SetupAttachment(GetRootComponent());
+	boxTraceEndPoint = CreateDefaultSubobject<USceneComponent>(TEXT("EndPoint"));
+	boxTraceEndPoint->SetupAttachment(GetRootComponent());
+}
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnSphereOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
@@ -35,3 +48,5 @@ void AWeapon::AttachMeshToSocket(USceneComponent* inParent, const FName& socketn
 	FAttachmentTransformRules transformRules(EAttachmentRule::SnapToTarget, true);
 	staticMesh->AttachToComponent(inParent, transformRules, socketname);
 }
+
+

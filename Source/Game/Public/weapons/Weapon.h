@@ -6,6 +6,8 @@
 #include "ActorItem.h"
 #include "Weapon.generated.h"
 
+
+class UBoxComponent;
 /**
  * 
  */
@@ -17,6 +19,12 @@ class GAME_API AWeapon : public AActorItem
 protected:
     void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override ;
 	void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* boxTraceStartPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* boxTraceEndPoint;
 
 public:
 
@@ -24,9 +32,15 @@ public:
 
 	void AttachMeshToSocket(USceneComponent* inParent, const FName& socketname);
 
+	 AWeapon();
 private:
 
 	UPROPERTY(EditAnywhere)
 	USoundBase* bladeSound;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* boxCollider;
+
+	
 	
 };

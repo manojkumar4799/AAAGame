@@ -188,4 +188,7 @@ void AGameCharacter::FinishEquipping()
 void AGameCharacter::HandleCollisionForBoxCollider(ECollisionEnabled::Type Collisiontype)
 {
 	equipWeapon->GetBoxCollider()->SetCollisionEnabled(Collisiontype);
+	if (Collisiontype == ECollisionEnabled::QueryOnly) {
+		equipWeapon->ignoreActor = nullptr;
+	}
 }

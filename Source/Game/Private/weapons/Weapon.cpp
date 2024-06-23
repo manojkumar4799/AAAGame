@@ -5,7 +5,35 @@
 #include "Characeter/GameCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "HitInterface.h"
 
+
+AWeapon::AWeapon()
+{
+
+	boxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxColliderComp"));
+	boxCollider->SetupAttachment(GetRootComponent());
+
+	boxTraceStartPoint = CreateDefaultSubobject<USceneComponent>(TEXT("StartPoint"));
+	boxTraceStartPoint->SetupAttachment(GetRootComponent());
+	boxTraceEndPoint = CreateDefaultSubobject<USceneComponent>(TEXT("EndPoint"));
+	boxTraceEndPoint->SetupAttachment(GetRootComponent());
+
+	boxCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	boxCollider->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	boxCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+
+}
+
+void AWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+	boxCollider->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnBoxOverlap);
+}
+
+//Overlaping section start
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnSphereOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
@@ -16,6 +44,46 @@ void AWeapon::OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	Super::OnSphereOverlapEnd(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
 }
+
+void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	const FVector startpoint = boxTraceStartPoint->GetComponentLocation();
+	const FVector endPoint = boxTraceEndPoint->GetComponentLocation();
+	TArray<AActor*> ignoreList;
+	FHitResult hitResult;
+
+	UKismetSystemLibrary::BoxTraceSingle(
+		this,
+		startpoint,
+		endPoint,
+		FVector(2.f, 2.f, 2.f),
+		boxTraceStartPoint->GetComponentRotation(),
+		ETraceTypeQuery::TraceTypeQuery1,
+		false,
+		ignoreList,
+		EDrawDebugTrace::None,
+		hitResult,
+		true
+	);
+
+	if (hitResult.GetActor()) {
+
+		IHitInterface* hitInterface = Cast<IHitInterface>(hitResult.GetActor());
+
+		if (hitInterface) {
+			hitInterface->GetHit(hitResult.ImpactPoint);
+		}
+
+	}
+
+}
+
+
+//overlaping section end
+
+//weapon related code start
+
+
 
 void AWeapon::Equip(USceneComponent* inParent, FName socketname)
 {
@@ -35,3 +103,10 @@ void AWeapon::AttachMeshToSocket(USceneComponent* inParent, const FName& socketn
 	FAttachmentTransformRules transformRules(EAttachmentRule::SnapToTarget, true);
 	staticMesh->AttachToComponent(inParent, transformRules, socketname);
 }
+UBoxComponent* AWeapon::GetBoxCollider()
+{
+	return boxCollider;
+}
+//weapon related code end
+
+

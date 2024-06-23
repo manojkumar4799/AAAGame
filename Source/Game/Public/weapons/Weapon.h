@@ -37,6 +37,8 @@ public:
 	void AttachMeshToSocket(USceneComponent* inParent, const FName& socketname);
 
 	UBoxComponent* GetBoxCollider();
+
+	AActor* ignoreActor;
 private:
 
 	UPROPERTY(EditAnywhere)

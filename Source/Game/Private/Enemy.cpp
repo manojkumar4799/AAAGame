@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -73,6 +74,9 @@ void AEnemy::GetHit(const FVector& hitImpactPoint)
 		 degrees *= -1;
 	 }
 	 PlayHitReaction(degrees);
+
+	 UGameplayStatics::PlaySoundAtLocation(this, hitSound, hitImpactPoint);
+
 	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + crossProduct.GetSafeNormal() * 70,7,FLinearColor::Green, 5,5);
 	 if (GEngine) {
 		 GEngine->AddOnScreenDebugMessage(1, 5, FColor::Black, FString::Printf(TEXT("Degrees: %f"), degrees));

@@ -37,4 +37,7 @@ public:
 private:
 	void PlayHitReaction(double angle);
 
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* hitSound;
+
 };

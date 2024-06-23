@@ -17,8 +17,10 @@ class GAME_API AWeapon : public AActorItem
 	GENERATED_BODY()
 
 protected:
+	virtual void BeginPlay() override;
     void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override ;
 	void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* boxTraceStartPoint;
@@ -26,13 +28,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* boxTraceEndPoint;
 
-public:
+	
 
+public:
+	AWeapon();
 	void Equip(USceneComponent* inParent, FName socketname);
 
 	void AttachMeshToSocket(USceneComponent* inParent, const FName& socketname);
 
-	 AWeapon();
+	UBoxComponent* GetBoxCollider();
 private:
 
 	UPROPERTY(EditAnywhere)
@@ -41,6 +45,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* boxCollider;
 
+	UFUNCTION()
+	void OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	
 };

@@ -40,6 +40,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void FinishEquipping();
 
+	
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -47,6 +49,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintCallable)
+	void HandleCollisionForBoxCollider(ECollisionEnabled::Type Collisiontype);
 private:
 	void MoveForward(float value);
 	void Turn(float value);
@@ -82,7 +86,7 @@ private:
 	EActionState actionState = EActionState::EAS_Unoccupied;
 
 	UPROPERTY(VisibleAnywhere)
-	AWeapon* currentWeapon;
+	AWeapon* equipWeapon;
 
 	
 

@@ -4,7 +4,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Characeter/GameCharacter.h"
+#include "Components/BoxComponent.h"
 #include "weapons/Weapon.h"
+
 
 
 // Sets default values
@@ -42,7 +44,7 @@ void AGameCharacter::EKeyPressed()
 
 		weapon->Equip(GetMesh(), FName("RightHandSocket"));
 		characterState = ECharacterState::ECS_Equiped;
-		currentWeapon = weapon;
+		equipWeapon = weapon;
 		overlapingItem = nullptr;
 	}
 	else if (characterState == ECharacterState::ECS_Equiped && actionState == EActionState::EAS_Unoccupied) {
@@ -51,7 +53,7 @@ void AGameCharacter::EKeyPressed()
 		characterState = ECharacterState::ECS_Unequiped;
 		actionState = EActionState::EAS_Equipping;
 	}
-	else if (currentWeapon && characterState == ECharacterState::ECS_Unequiped && actionState == EActionState::EAS_Unoccupied) {
+	else if (equipWeapon && characterState == ECharacterState::ECS_Unequiped && actionState == EActionState::EAS_Unoccupied) {
 		PlayEquipMontage(FName("Equip"));
 		characterState = ECharacterState::ECS_Equiped;
 		actionState = EActionState::EAS_Equipping;
@@ -168,13 +170,13 @@ void AGameCharacter::PlayEquipMontage(FName sectionName)
 //called from notifier and blueprint
 void AGameCharacter::EquipSword()
 {
-	currentWeapon->AttachMeshToSocket(GetMesh(), FName("RightHandSocket"));
+	equipWeapon->AttachMeshToSocket(GetMesh(), FName("RightHandSocket"));
 }
 
 //called from notifier and blueprint
 void AGameCharacter::Unarm()
 {
-	currentWeapon->AttachMeshToSocket(GetMesh(), FName("WeaponSocket"));
+	equipWeapon->AttachMeshToSocket(GetMesh(), FName("WeaponSocket"));
 }
 
 //called from notifier and blueprint
@@ -183,3 +185,7 @@ void AGameCharacter::FinishEquipping()
 	actionState = EActionState::EAS_Unoccupied;
 }
 
+void AGameCharacter::HandleCollisionForBoxCollider(ECollisionEnabled::Type Collisiontype)
+{
+	equipWeapon->GetBoxCollider()->SetCollisionEnabled(Collisiontype);
+}

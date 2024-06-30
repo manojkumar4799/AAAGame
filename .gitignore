@@ -73,3 +73,6 @@ Plugins/*/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 Content/EchoContent/Characters/Echo/Textures/Head/T_Head_highpass_S.uasset
+Content/ParagonMinions/Characters/Global/MaterialLayers/Wood/T_TreeBark_D.uasset
+Content/ParagonMinions/Characters/Global/MaterialLayers/Wood/T_TreeBark_N.uasset
+Content/ParagonMinions/FX/Textures/Environment/T_RevaCliff_D.uasset

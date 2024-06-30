@@ -28,6 +28,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* boxTraceEndPoint;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateFieldForce(const FVector& fieldForceLocation);
+
 	
 
 public:

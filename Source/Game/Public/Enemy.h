@@ -32,12 +32,15 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void GetHit(const FVector& hitImpactPoint);
+	virtual void GetHit_Implementation(const FVector& hitImpactPoint);
 
 private:
 	void PlayHitReaction(double angle);
 
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	USoundBase* hitSound;
+
+	UPROPERTY(EditAnywhere, Category = VFX)
+	UParticleSystem* hitVFX;
 
 };

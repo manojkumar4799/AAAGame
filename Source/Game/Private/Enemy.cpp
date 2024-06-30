@@ -53,16 +53,17 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void AEnemy::GetHit(const FVector& hitImpactPoint)
+void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
 {
 	DrawDebugSphere( GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
-	
+	UE_LOG(LogTemp, Warning, TEXT("GEtHotFunction "));
 
 	const FVector forwardVector = GetActorForwardVector();
 
 	const FVector LowerHitPoint(hitImpactPoint.X, hitImpactPoint.Y, GetActorLocation().Z);
 	const FVector toHitPoint = (LowerHitPoint - GetActorLocation()).GetSafeNormal();
 	
+	if(hitVFX)	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), hitVFX, hitImpactPoint);
 
 	// forward * toHit =|forward| |toHit| CosTheta
 	 double CosTheta= FVector::DotProduct(forwardVector, toHitPoint);
@@ -77,13 +78,13 @@ void AEnemy::GetHit(const FVector& hitImpactPoint)
 
 	 UGameplayStatics::PlaySoundAtLocation(this, hitSound, hitImpactPoint);
 
-	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + crossProduct.GetSafeNormal() * 70,7,FLinearColor::Green, 5,5);
+	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + crossProduct.GetSafeNormal() * 70,7,FLinearColor::Green, 5,2);
 	 if (GEngine) {
 		 GEngine->AddOnScreenDebugMessage(1, 5, FColor::Black, FString::Printf(TEXT("Degrees: %f"), degrees));
 	 }
 
-	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 70, 7, FLinearColor::Yellow, 5,5);
-	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHitPoint * 70, 7, FLinearColor::Red, 5,5);
+	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 70, 7, FLinearColor::Yellow, 5,2);
+	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHitPoint * 70, 7, FLinearColor::Red, 5,2);
 }
 
 void AEnemy::PlayHitReaction(double angle)

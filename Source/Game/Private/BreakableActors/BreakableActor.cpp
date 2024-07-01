@@ -5,14 +5,19 @@
 #include "GeometryCollection/GeometryCollectionComponent.h"
 #include "CoinTreasure.h"
 #include "Chaos/ChaosGameplayEventDispatcher.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 ABreakableActor::ABreakableActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	outerColliderCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ColliderCapsule"));
+	SetRootComponent(outerColliderCapsule);
+	outerColliderCapsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	outerColliderCapsule->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 	geometryObject = CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("GeomteryObjectRef"));
-	SetRootComponent(geometryObject);
+	geometryObject->SetupAttachment(GetRootComponent());
 	geometryObject->SetGenerateOverlapEvents(true);
 }
 
@@ -31,6 +36,8 @@ void ABreakableActor::OnBreakChoas(const FChaosBreakEvent& BreakEvent)
 		int32 treasureTyoeSelection = FMath::RandRange(0, TreasureClasses.Num() - 1);
 		GetWorld()->SpawnActor<ACoinTreasure>(TreasureClasses[treasureTyoeSelection], GetActorLocation(), GetActorRotation());
 		btreasureSpwaned = true;
+		SetLifeSpan(3);
+		outerColliderCapsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	}
 }
 

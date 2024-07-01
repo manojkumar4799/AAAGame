@@ -30,6 +30,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UCapsuleComponent* colliderCapsule;
 
+	UPROPERTY(EditAnywhere)
+	class UCapsuleComponent* outerColliderCapsule;
+
 
 	UFUNCTION()
 	void OnBreakChoas(const FChaosBreakEvent& BreakEvent);

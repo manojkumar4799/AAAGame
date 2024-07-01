@@ -29,4 +29,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+private:
+
+	UPROPERTY(EditAnywhere)
+	int32 goldCount;
+
 };

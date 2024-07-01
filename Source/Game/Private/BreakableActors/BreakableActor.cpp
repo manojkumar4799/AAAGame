@@ -3,6 +3,8 @@
 
 #include "BreakableActors/BreakableActor.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
+#include "CoinTreasure.h"
+#include "Chaos/ChaosGameplayEventDispatcher.h"
 
 // Sets default values
 ABreakableActor::ABreakableActor()
@@ -18,7 +20,18 @@ ABreakableActor::ABreakableActor()
 void ABreakableActor::BeginPlay()
 {
 	Super::BeginPlay();
+	geometryObject->OnChaosBreakEvent.AddDynamic(this, &ABreakableActor::OnBreakChoas);
 	
+}
+
+void ABreakableActor::OnBreakChoas(const FChaosBreakEvent& BreakEvent)
+{
+	if (!btreasureSpwaned &&TreasureClasses.Num() > 0)
+	{
+		int32 treasureTyoeSelection = FMath::RandRange(0, TreasureClasses.Num() - 1);
+		GetWorld()->SpawnActor<ACoinTreasure>(TreasureClasses[treasureTyoeSelection], GetActorLocation(), GetActorRotation());
+		btreasureSpwaned = true;
+	}
 }
 
 // Called every frame
@@ -30,6 +43,6 @@ void ABreakableActor::Tick(float DeltaTime)
 
 void ABreakableActor::GetHit_Implementation(const FVector& hitImpactPoint)
 {
-	UE_LOG(LogTemp, Warning, TEXT("GEtHotFunction "));
+	
 }
 

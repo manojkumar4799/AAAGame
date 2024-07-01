@@ -24,9 +24,22 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<class ACoinTreasure>> TreasureClasses;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UCapsuleComponent* colliderCapsule;
+
+
+	UFUNCTION()
+	void OnBreakChoas(const FChaosBreakEvent& BreakEvent);
+
 private:	
 	UPROPERTY(VisibleAnywhere)
 	UGeometryCollectionComponent* geometryObject;
+
+	bool btreasureSpwaned = false;
+
 	
 
 };

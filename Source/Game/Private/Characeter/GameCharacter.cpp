@@ -153,7 +153,7 @@ void AGameCharacter::PlayAttackMontage()
 			sectionName = FName("Attack2");
 			break;
 		}
-
+		sectionName = FName("Attack1");
 		animInstance->Montage_JumpToSection(sectionName, echoAttackMontage);
 	}
 }

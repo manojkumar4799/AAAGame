@@ -33,12 +33,11 @@ AEnemy::AEnemy()
 
 // Called when the game starts or when spawned
 void AEnemy::BeginPlay()
+
 {
 	Super::BeginPlay();
-	HealthComponet->SetHealthPercent(0.6);
-	
-}
 
+}
 void AEnemy::PlayHitReactionMontage(const FName& sectionName)
 {
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
@@ -94,6 +93,16 @@ void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
 
 	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 70, 7, FLinearColor::Yellow, 5,2);
 	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHitPoint * 70, 7, FLinearColor::Red, 5,2);
+}
+
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (attributeComp && HealthComponet) {
+		attributeComp->Receivedamage(DamageAmount);
+		HealthComponet->SetHealthPercent(attributeComp->GetHealthPercent());
+	}
+	
+	return DamageAmount;
 }
 
 void AEnemy::PlayHitReaction(double angle)

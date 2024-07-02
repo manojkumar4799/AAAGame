@@ -27,10 +27,15 @@ public:
 private:
 
 	UPROPERTY(EditAnywhere)
-	int32 health;
+	float health;
 
 	UPROPERTY(EditAnywhere)
-	int32 maxHealth;
+	float maxHealth;
+
+public:
+
+	void Receivedamage(float damage);
+	float GetHealthPercent();
 	
 
 

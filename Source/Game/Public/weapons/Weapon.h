@@ -35,7 +35,7 @@ protected:
 
 public:
 	AWeapon();
-	void Equip(USceneComponent* inParent, FName socketname);
+	void Equip(USceneComponent* inParent, FName socketname, AActor* newOwner, APawn* Instigator);
 
 	void AttachMeshToSocket(USceneComponent* inParent, const FName& socketname);
 
@@ -49,6 +49,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* boxCollider;
+
+	UPROPERTY(EditAnywhere)
+	float damage = 20;
 
 	UFUNCTION()
 	void OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

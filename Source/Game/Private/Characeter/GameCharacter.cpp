@@ -42,7 +42,7 @@ void AGameCharacter::EKeyPressed()
 	AWeapon* weapon = Cast<AWeapon>(overlapingItem);
 	if (weapon) {
 
-		weapon->Equip(GetMesh(), FName("RightHandSocket"));
+		weapon->Equip(GetMesh(), FName("RightHandSocket"),this, this);
 		characterState = ECharacterState::ECS_Equiped;
 		equipWeapon = weapon;
 		overlapingItem = nullptr;

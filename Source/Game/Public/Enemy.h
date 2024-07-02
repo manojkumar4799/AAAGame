@@ -43,4 +43,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = VFX)
 	UParticleSystem* hitVFX;
 
+	UPROPERTY(EditAnywhere)
+	class UAttributeComponent* attributeComp;
+
+	UPROPERTY(EditAnywhere)
+	class UHealthBarComponent* HealthComponet;
+
 };

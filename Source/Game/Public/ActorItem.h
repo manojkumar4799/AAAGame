@@ -44,6 +44,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* sphere;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* spawnVFX;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -8,6 +8,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "HitInterface.h"
+#include "NiagaraComponent.h"
 
 
 AWeapon::AWeapon()
@@ -99,6 +100,9 @@ void AWeapon::Equip(USceneComponent* inParent, FName socketname)
 	}
 	if (sphere) {
 		sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+	if (spawnVFX) {
+		spawnVFX->Deactivate();
 	}
 }
 

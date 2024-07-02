@@ -4,6 +4,7 @@
 #include "DrawDebugHelpers.h"
 #include "ActorItem.h"
 #include "Characeter/GameCharacter.h"
+#include "NiagaraComponent.h"
 
 
 
@@ -24,6 +25,8 @@ AActorItem::AActorItem()
 	RootComponent = staticMesh;
 	sphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	sphere->SetupAttachment(GetRootComponent());
+	spawnVFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SpwanEffect"));
+	spawnVFX->SetupAttachment(GetRootComponent());
 
 }
 

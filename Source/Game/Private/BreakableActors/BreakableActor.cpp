@@ -6,6 +6,7 @@
 #include "CoinTreasure.h"
 #include "Chaos/ChaosGameplayEventDispatcher.h"
 #include "Components/CapsuleComponent.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 ABreakableActor::ABreakableActor()

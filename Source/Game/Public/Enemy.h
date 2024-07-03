@@ -26,6 +26,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* hitReactionMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* deathMontage;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -37,6 +40,8 @@ public:
 
 private:
 	void PlayHitReaction(double angle);
+
+	void PlayDeathMontage();
 
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	USoundBase* hitSound;

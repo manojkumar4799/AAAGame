@@ -82,7 +82,9 @@ void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
 	 if (crossProduct.Z < 0) {
 		 degrees *= -1;
 	 }
-	 PlayHitReaction(degrees);
+
+	 if (attributeComp->IsAlive()) PlayHitReaction(degrees);
+	 else PlayDeathMontage();
 
 	 UGameplayStatics::PlaySoundAtLocation(this, hitSound, hitImpactPoint);
 
@@ -112,5 +114,21 @@ void AEnemy::PlayHitReaction(double angle)
 	else if (angle <= -45 && angle > -135) sectionToPlay = FName("FromLeft");
 	else if (angle > 45 && angle <= 135) sectionToPlay = FName("FromRight");
 	PlayHitReactionMontage(sectionToPlay);
+}
+
+void AEnemy::PlayDeathMontage()
+{
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (animInstance) {
+		animInstance->Montage_Play(deathMontage);
+		TArray<FName> selection;
+		selection.Add("Death1");
+		selection.Add("Death2");
+		selection.Add("Death3");
+		selection.Add("Death4");
+		int32 random = FMath::RandRange(0, selection.Num() - 1);
+		animInstance->Montage_JumpToSection(selection[random],deathMontage);
+
+	}
 }
 

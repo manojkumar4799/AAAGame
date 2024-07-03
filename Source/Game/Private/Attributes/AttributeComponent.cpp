@@ -42,3 +42,8 @@ float UAttributeComponent::GetHealthPercent()
 	return health/maxHealth;
 }
 
+bool UAttributeComponent::IsAlive()
+{
+	return health>0.f;
+}
+

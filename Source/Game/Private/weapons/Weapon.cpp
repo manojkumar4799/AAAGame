@@ -79,6 +79,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		}
 		ignoreActor = hitResult.GetActor();
 		CreateFieldForce(hitResult.ImpactPoint);
+		UGameplayStatics::ApplyDamage(hitResult.GetActor(), damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 	}
 
 }
@@ -90,8 +91,10 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 
 
 
-void AWeapon::Equip(USceneComponent* inParent, FName socketname)
+void AWeapon::Equip(USceneComponent* inParent, FName socketname, AActor* newOwner, APawn* instigator)
 {
+	SetOwner(newOwner);
+	SetInstigator(instigator);
 	AttachMeshToSocket(inParent, socketname);
 	itemState = EItemState::EIS_Equipped;
 	if (bladeSound) {

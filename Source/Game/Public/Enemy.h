@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "HitInterface.h"
+#include "Characeter/CharacterTypes.h"
 #include "Enemy.generated.h"
 
 
@@ -29,6 +30,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* deathMontage;
+
+	UPROPERTY(BlueprintReadOnly)
+	EDeathStatus  deathStatus = EDeathStatus::EDS_Alive;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

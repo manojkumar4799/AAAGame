@@ -127,6 +127,7 @@ void AEnemy::PlayDeathMontage()
 		selection.Add("Death3");
 		selection.Add("Death4");
 		int32 random = FMath::RandRange(0, selection.Num() - 1);
+		deathStatus = static_cast<EDeathStatus>(random+1);
 		animInstance->Montage_JumpToSection(selection[random],deathMontage);
 
 	}

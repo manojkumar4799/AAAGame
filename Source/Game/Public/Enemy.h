@@ -33,6 +33,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	EDeathStatus  deathStatus = EDeathStatus::EDS_Alive;
+
+	UPROPERTY(EditAnywhere)
+	float triggerRadius = 600;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -58,6 +61,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class UHealthBarComponent* HealthComponet;
+
+	UPROPERTY()
+	AActor* combatTarget = nullptr;
 
 
 };

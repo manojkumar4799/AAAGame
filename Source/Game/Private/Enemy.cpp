@@ -36,6 +36,7 @@ void AEnemy::BeginPlay()
 
 {
 	Super::BeginPlay();
+	if (HealthComponet) HealthComponet->SetVisibility(false);
 
 }
 void AEnemy::PlayHitReactionMontage(const FName& sectionName)
@@ -51,6 +52,15 @@ void AEnemy::PlayHitReactionMontage(const FName& sectionName)
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (combatTarget) {
+		const double distanceToTarget = (combatTarget->GetActorLocation() - GetActorLocation()).Size();
+
+		if(distanceToTarget > triggerRadius) {
+			combatTarget = nullptr;
+			if (HealthComponet) HealthComponet->SetVisibility(false);
+		}
+	}
 
 }
 
@@ -71,6 +81,7 @@ void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
 	const FVector LowerHitPoint(hitImpactPoint.X, hitImpactPoint.Y, GetActorLocation().Z);
 	const FVector toHitPoint = (LowerHitPoint - GetActorLocation()).GetSafeNormal();
 	
+	if (HealthComponet) HealthComponet->SetVisibility(true);
 	if(hitVFX)	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), hitVFX, hitImpactPoint);
 
 	// forward * toHit =|forward| |toHit| CosTheta
@@ -92,6 +103,7 @@ void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
 	 if (GEngine) {
 		 GEngine->AddOnScreenDebugMessage(1, 5, FColor::Black, FString::Printf(TEXT("Degrees: %f"), degrees));
 	 }
+	 
 
 	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 70, 7, FLinearColor::Yellow, 5,2);
 	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHitPoint * 70, 7, FLinearColor::Red, 5,2);
@@ -102,6 +114,7 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	if (attributeComp && HealthComponet) {
 		attributeComp->Receivedamage(DamageAmount);
 		HealthComponet->SetHealthPercent(attributeComp->GetHealthPercent());
+		combatTarget = EventInstigator->GetPawn();
 	}
 	
 	return DamageAmount;
@@ -119,6 +132,7 @@ void AEnemy::PlayHitReaction(double angle)
 void AEnemy::PlayDeathMontage()
 {
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (HealthComponet) HealthComponet->SetVisibility(false);
 	if (animInstance) {
 		animInstance->Montage_Play(deathMontage);
 		TArray<FName> selection;

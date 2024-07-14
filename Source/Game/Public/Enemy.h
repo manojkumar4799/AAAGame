@@ -36,6 +36,21 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float triggerRadius = 600;
+
+	//Navigation
+
+	UPROPERTY()
+	AActor* combatTarget = nullptr;
+
+	UPROPERTY(EditInstanceOnly)
+	AActor* patrolTarget;
+
+	UPROPERTY(EditInstanceOnly)
+	TArray<AActor*> partroltargetPoint;
+
+	class AAIController* enemyController;
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -62,8 +77,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UHealthBarComponent* HealthComponet;
 
-	UPROPERTY()
-	AActor* combatTarget = nullptr;
+	
+
+
 
 
 };

@@ -10,6 +10,7 @@
 #include "Components/WidgetComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AIController.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -42,6 +43,23 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	if (HealthComponet) HealthComponet->SetVisibility(false);
+
+	enemyController = Cast<AAIController>(GetController());
+	if (enemyController) {
+		FAIMoveRequest moveRequest;
+		moveRequest.SetGoalActor(patrolTarget);
+		moveRequest.SetAcceptanceRadius(10.f);
+		FNavPathSharedPtr navPath;
+		enemyController->MoveTo(moveRequest, &navPath);
+		TArray<FNavPathPoint> pathPoints= navPath->GetPathPoints();
+
+		if (pathPoints.Num()>0) {
+			for (auto point : pathPoints) {
+				DrawDebugSphere(GetWorld(), point.Location, 10.f, 20.F, FColor::Green, true);
+			}
+		}
+		
+	}
 
 }
 void AEnemy::PlayHitReactionMontage(const FName& sectionName)

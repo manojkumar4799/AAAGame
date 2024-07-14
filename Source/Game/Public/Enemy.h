@@ -46,14 +46,20 @@ protected:
 	AActor* patrolTarget;
 
 	UPROPERTY(EditInstanceOnly)
-	TArray<AActor*> partroltargetPoint;
+	double patrolPointRadius = 15;
 
+	UPROPERTY(EditInstanceOnly)
+	TArray<AActor*> patroltargetPoints;
+
+	//Controllers
 	class AAIController* enemyController;
 
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -76,6 +82,13 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class UHealthBarComponent* HealthComponet;
+
+
+	//Navigation
+	bool IstargetInRadius(AActor* targetActor, double radius);
+	void MoveToTarget(AActor* target);
+
+	void Patrol();
 
 	
 

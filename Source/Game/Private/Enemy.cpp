@@ -70,18 +70,10 @@ void AEnemy::PlayHitReactionMontage(const FName& sectionName)
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
 
-	if (combatTarget) {
-		const double distanceToTarget = (combatTarget->GetActorLocation() - GetActorLocation()).Size();
-
-		if( !IstargetInRadius(combatTarget,triggerRadius)) {
-			combatTarget = nullptr;
-			if (HealthComponet) HealthComponet->SetVisibility(false);
-		}
-	}
-
-	if(currentEnemyState== EEnemyState::EES_Patrolling)	Patrol();
-
+	if(currentEnemyState== EEnemyState::EES_Patrolling)	PatrolCheck();
+	else CombatCheck();
 }
 
 void AEnemy::MoveToTarget( AActor* target)
@@ -105,9 +97,9 @@ void AEnemy::MoveToTarget( AActor* target)
 	}
 }
 
-void AEnemy::Patrol()
+void AEnemy::PatrolCheck()
 {
-	if (patrolTarget) {
+	if (patrolTarget && currentEnemyState== EEnemyState::EES_Patrolling) {
 
 		TArray<AActor*> validTargetPoints;
 
@@ -129,6 +121,21 @@ void AEnemy::Patrol()
 				GetWorldTimerManager().SetTimer(patrolTimer, this, &AEnemy::PatrolTimerFinished, FMath::RandRange(3, 6));
 			}
 
+		}
+	}
+}
+
+void AEnemy::CombatCheck()
+{
+	if (combatTarget) {
+		const double distanceToTarget = (combatTarget->GetActorLocation() - GetActorLocation()).Size();
+
+		if (!IstargetInRadius(combatTarget, triggerRadius)) {
+			combatTarget = nullptr;
+			if (HealthComponet) HealthComponet->SetVisibility(false);
+			currentEnemyState = EEnemyState::EES_Patrolling;
+			GetCharacterMovement()->MaxWalkSpeed = 125.f;
+			MoveToTarget(patrolTarget);
 		}
 	}
 }

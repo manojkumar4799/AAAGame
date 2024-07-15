@@ -66,10 +66,16 @@ public:
 	virtual void GetHit_Implementation(const FVector& hitImpactPoint);
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	
+
+
 private:
 	void PlayHitReaction(double angle);
 
-	void PlayDeathMontage();
+	void OnDeath();
+
+	UFUNCTION()
+	void OnPawnSeen(APawn* seenPawn);
 
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	USoundBase* hitSound;
@@ -89,6 +95,17 @@ private:
 	void MoveToTarget(AActor* target);
 
 	void Patrol();
+
+	void PatrolTimerFinished();
+
+	
+
+	FTimerHandle patrolTimer;
+
+	UPROPERTY(VisibleAnywhere)
+	class UPawnSensingComponent* pawnSense;
+
+	EEnemyState currentEnemyState = EEnemyState::EES_Patrolling;
 
 	
 

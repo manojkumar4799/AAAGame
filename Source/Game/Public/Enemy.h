@@ -34,10 +34,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	EDeathStatus  deathStatus = EDeathStatus::EDS_Alive;
 
-	UPROPERTY(EditAnywhere)
-	float triggerRadius = 600;
+	
 
 	//Navigation
+	UPROPERTY(EditAnywhere)
+	float chaseRadius = 600;
+
+	UPROPERTY(EditAnywhere)
+	float attackRadius = 150;
 
 	UPROPERTY()
 	AActor* combatTarget = nullptr;
@@ -107,10 +111,6 @@ private:
 	class UPawnSensingComponent* pawnSense;
 
 	EEnemyState currentEnemyState = EEnemyState::EES_Patrolling;
-
-	
-
-
 
 
 };

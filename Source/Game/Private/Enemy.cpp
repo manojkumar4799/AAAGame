@@ -50,7 +50,6 @@ void AEnemy::BeginPlay()
 	enemyController = Cast<AAIController>(GetController());
 	patrolTarget = patroltargetPoints[FMath::RandRange(0, patroltargetPoints.Num() - 1)];
 	MoveToTarget(patrolTarget);
-
 	if (pawnSense) {
 		pawnSense->OnSeePawn.AddDynamic(this, &AEnemy::OnPawnSeen);
 	}
@@ -70,7 +69,9 @@ void AEnemy::PlayHitReactionMontage(const FName& sectionName)
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+	if (currentEnemyState == EEnemyState::EES_Dead) {
+		return;
+	}
 
 	if(currentEnemyState== EEnemyState::EES_Patrolling)	PatrolCheck();
 	else CombatCheck();
@@ -79,6 +80,7 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::MoveToTarget( AActor* target)
 {
 	if (currentEnemyState == EEnemyState::EES_Dead) return;
+
 	if (enemyController) {
 		FAIMoveRequest moveRequest;
 		moveRequest.SetGoalActor(target);
@@ -87,10 +89,10 @@ void AEnemy::MoveToTarget( AActor* target)
 		FNavPathSharedPtr navPath;
 		enemyController->MoveTo(moveRequest, &navPath);
 		TArray<FNavPathPoint> pathPoints = navPath->GetPathPoints();
-
+		
 		if (pathPoints.Num() > 0) {
-			for (auto point : pathPoints) {
-				DrawDebugSphere(GetWorld(), point.Location, 10.f, 20.F, FColor::Green, true);
+			for (auto point : patroltargetPoints) {
+				DrawDebugSphere(GetWorld(), point->GetActorLocation(), 10.f, 20.F, FColor::Green, true);
 			}
 		}
 
@@ -130,12 +132,26 @@ void AEnemy::CombatCheck()
 	if (combatTarget) {
 		const double distanceToTarget = (combatTarget->GetActorLocation() - GetActorLocation()).Size();
 
-		if (!IstargetInRadius(combatTarget, triggerRadius)) {
+		//out of chasing radius
+		if (!IstargetInRadius(combatTarget, chaseRadius)) {
 			combatTarget = nullptr;
 			if (HealthComponet) HealthComponet->SetVisibility(false);
 			currentEnemyState = EEnemyState::EES_Patrolling;
 			GetCharacterMovement()->MaxWalkSpeed = 125.f;
 			MoveToTarget(patrolTarget);
+			UE_LOG(LogTemp, Warning, TEXT("Lost Interest"));
+		}
+		else if (!IstargetInRadius(combatTarget, attackRadius) && currentEnemyState != EEnemyState::EES_Chasing) {
+			//out of attack radius
+			currentEnemyState = EEnemyState::EES_Chasing;
+			GetCharacterMovement()->MaxWalkSpeed = 300.f;
+			MoveToTarget(combatTarget);
+			UE_LOG(LogTemp, Warning, TEXT("Chase Player, Not in Attack Radius"));
+		}
+		else if (IstargetInRadius(combatTarget, attackRadius) && currentEnemyState!= EEnemyState::EES_Attacking) {
+			currentEnemyState = EEnemyState::EES_Attacking;
+			UE_LOG(LogTemp, Warning, TEXT("Attacking"));
+
 		}
 	}
 }
@@ -192,10 +208,15 @@ void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (attributeComp && HealthComponet) {
+	if (currentEnemyState == EEnemyState::EES_Dead)  return DamageAmount;
+
+	if (attributeComp && HealthComponet && currentEnemyState!=EEnemyState::EES_Dead ) {
 		attributeComp->Receivedamage(DamageAmount);
 		HealthComponet->SetHealthPercent(attributeComp->GetHealthPercent());
 		combatTarget = EventInstigator->GetPawn();
+		currentEnemyState = EEnemyState::EES_Chasing;
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		MoveToTarget(combatTarget);
 	}
 	
 	return DamageAmount;
@@ -203,11 +224,14 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 void AEnemy::OnPawnSeen(APawn* seenPawn)
 {
-	if (currentEnemyState == EEnemyState::EES_Chasing) return;
-	UE_LOG(LogTemp, Warning, TEXT("Saw Pawn!"));
-
+	if (currentEnemyState == EEnemyState::EES_Dead) {
+		return;
+	}
 	if (seenPawn->ActorHasTag("EchoCharacter")) {
-
+		UE_LOG(LogTemp, Warning, TEXT("Saw Echo!"));
+		if (currentEnemyState == EEnemyState::EES_Attacking) {
+			return;
+		}
 		currentEnemyState = EEnemyState::EES_Chasing;
 		GetWorldTimerManager().ClearTimer(patrolTimer);
 		GetCharacterMovement()->MaxWalkSpeed = 300;

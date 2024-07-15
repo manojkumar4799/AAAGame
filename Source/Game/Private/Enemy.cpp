@@ -45,21 +45,9 @@ void AEnemy::BeginPlay()
 	if (HealthComponet) HealthComponet->SetVisibility(false);
 
 	enemyController = Cast<AAIController>(GetController());
-	if (enemyController) {
-		FAIMoveRequest moveRequest;
-		moveRequest.SetGoalActor(patrolTarget);
-		moveRequest.SetAcceptanceRadius(10.f);
-		FNavPathSharedPtr navPath;
-		enemyController->MoveTo(moveRequest, &navPath);
-		TArray<FNavPathPoint> pathPoints= navPath->GetPathPoints();
-
-		if (pathPoints.Num()>0) {
-			for (auto point : pathPoints) {
-				DrawDebugSphere(GetWorld(), point.Location, 10.f, 20.F, FColor::Green, true);
-			}
-		}
-		
-	}
+	patrolTarget = patroltargetPoints[FMath::RandRange(0, patroltargetPoints.Num() - 1)];
+	MoveToTarget(patrolTarget);
+	
 
 }
 void AEnemy::PlayHitReactionMontage(const FName& sectionName)
@@ -79,12 +67,62 @@ void AEnemy::Tick(float DeltaTime)
 	if (combatTarget) {
 		const double distanceToTarget = (combatTarget->GetActorLocation() - GetActorLocation()).Size();
 
-		if(distanceToTarget > triggerRadius) {
+		if( !IstargetInRadius(combatTarget,triggerRadius)) {
 			combatTarget = nullptr;
 			if (HealthComponet) HealthComponet->SetVisibility(false);
 		}
 	}
 
+	Patrol();
+
+}
+
+void AEnemy::MoveToTarget( AActor* target)
+{
+	if (enemyController) {
+		FAIMoveRequest moveRequest;
+		moveRequest.SetGoalActor(target);
+		moveRequest.SetAcceptanceRadius(10.f);
+		moveRequest.SetReachTestIncludesAgentRadius(false);
+		FNavPathSharedPtr navPath;
+		enemyController->MoveTo(moveRequest, &navPath);
+		TArray<FNavPathPoint> pathPoints = navPath->GetPathPoints();
+
+		if (pathPoints.Num() > 0) {
+			for (auto point : pathPoints) {
+				DrawDebugSphere(GetWorld(), point.Location, 10.f, 20.F, FColor::Green, true);
+			}
+		}
+
+	}
+}
+
+void AEnemy::Patrol()
+{
+	if (patrolTarget) {
+
+		TArray<AActor*> validTargetPoints;
+
+		for (AActor* validTarget : patroltargetPoints) {
+
+			if (validTarget != patrolTarget) {
+				validTargetPoints.AddUnique(validTarget);
+			}
+
+		}
+
+		if (IstargetInRadius(patrolTarget, patrolPointRadius)) {
+
+			if (validTargetPoints.Num() > 0) {
+				int32 randomPatrolPointIndex = FMath::RandRange(0, validTargetPoints.Num() - 1);
+				AActor* randomPatrolPoint = validTargetPoints[randomPatrolPointIndex];
+				patrolTarget = randomPatrolPoint;
+
+				MoveToTarget(patrolTarget);
+			}
+
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -168,5 +206,13 @@ void AEnemy::PlayDeathMontage()
 		animInstance->Montage_JumpToSection(selection[random],deathMontage);
 
 	}
+}
+
+bool AEnemy::IstargetInRadius(AActor* targetActor, double radius)
+{
+	double distance = (targetActor->GetActorLocation() - GetActorLocation()).Size();
+	DrawDebugSphere(GetWorld(), targetActor->GetActorLocation(), 30.f, 20.F, FColor::Yellow);
+	DrawDebugSphere(GetWorld(), GetActorLocation(), 30.f, 20.F, FColor::Yellow);
+	return distance <= radius;
 }
 

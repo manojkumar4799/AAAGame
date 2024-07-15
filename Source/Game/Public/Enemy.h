@@ -94,7 +94,8 @@ private:
 	bool IstargetInRadius(AActor* targetActor, double radius);
 	void MoveToTarget(AActor* target);
 
-	void Patrol();
+	void PatrolCheck();
+	void CombatCheck();
 
 	void PatrolTimerFinished();
 

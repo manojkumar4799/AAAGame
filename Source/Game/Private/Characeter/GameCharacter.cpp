@@ -34,6 +34,7 @@ AGameCharacter::AGameCharacter()
 void AGameCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	Tags.Add(FName("EchoCharacter"));
 	
 }
 

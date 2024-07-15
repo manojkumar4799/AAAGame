@@ -11,6 +11,7 @@
 #include "HUD/HealthBarComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
+#include "Perception/PawnSensingComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -33,7 +34,9 @@ AEnemy::AEnemy()
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
 
-
+	pawnSense = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensor"));
+	pawnSense->SightRadius = 4000.f;
+	pawnSense->SetPeripheralVisionAngle(75.f);
 
 }
 
@@ -47,6 +50,10 @@ void AEnemy::BeginPlay()
 	enemyController = Cast<AAIController>(GetController());
 	patrolTarget = patroltargetPoints[FMath::RandRange(0, patroltargetPoints.Num() - 1)];
 	MoveToTarget(patrolTarget);
+
+	if (pawnSense) {
+		pawnSense->OnSeePawn.AddDynamic(this, &AEnemy::OnPawnSeen);
+	}
 	
 
 }
@@ -73,12 +80,13 @@ void AEnemy::Tick(float DeltaTime)
 		}
 	}
 
-	Patrol();
+	if(currentEnemyState== EEnemyState::EES_Patrolling)	Patrol();
 
 }
 
 void AEnemy::MoveToTarget( AActor* target)
 {
+	if (currentEnemyState == EEnemyState::EES_Dead) return;
 	if (enemyController) {
 		FAIMoveRequest moveRequest;
 		moveRequest.SetGoalActor(target);
@@ -118,11 +126,16 @@ void AEnemy::Patrol()
 				AActor* randomPatrolPoint = validTargetPoints[randomPatrolPointIndex];
 				patrolTarget = randomPatrolPoint;
 
-				MoveToTarget(patrolTarget);
+				GetWorldTimerManager().SetTimer(patrolTimer, this, &AEnemy::PatrolTimerFinished, FMath::RandRange(3, 6));
 			}
 
 		}
 	}
+}
+
+void AEnemy::PatrolTimerFinished()
+{
+	MoveToTarget(patrolTarget);
 }
 
 // Called to bind functionality to input
@@ -156,7 +169,7 @@ void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
 	 }
 
 	 if (attributeComp->IsAlive()) PlayHitReaction(degrees);
-	 else PlayDeathMontage();
+	 else OnDeath();
 
 	 UGameplayStatics::PlaySoundAtLocation(this, hitSound, hitImpactPoint);
 
@@ -181,6 +194,21 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	return DamageAmount;
 }
 
+void AEnemy::OnPawnSeen(APawn* seenPawn)
+{
+	if (currentEnemyState == EEnemyState::EES_Chasing) return;
+	UE_LOG(LogTemp, Warning, TEXT("Saw Pawn!"));
+
+	if (seenPawn->ActorHasTag("EchoCharacter")) {
+
+		currentEnemyState = EEnemyState::EES_Chasing;
+		GetWorldTimerManager().ClearTimer(patrolTimer);
+		GetCharacterMovement()->MaxWalkSpeed = 300;
+		combatTarget = seenPawn;
+		MoveToTarget(combatTarget);
+	}
+}
+
 void AEnemy::PlayHitReaction(double angle)
 {
 	FName sectionToPlay = FName("FromBack");
@@ -190,8 +218,9 @@ void AEnemy::PlayHitReaction(double angle)
 	PlayHitReactionMontage(sectionToPlay);
 }
 
-void AEnemy::PlayDeathMontage()
+void AEnemy::OnDeath()
 {
+	currentEnemyState = EEnemyState::EES_Dead;
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 	if (HealthComponet) HealthComponet->SetVisibility(false);
 	if (animInstance) {

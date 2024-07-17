@@ -6,12 +6,13 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Attributes/AttributeComponent.h"
 #include "Components/WidgetComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
 #include "Perception/PawnSensingComponent.h"
+
+#include "Attributes/AttributeComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -25,7 +26,7 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
 
-	attributeComp = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
+	
 
 	HealthComponet = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthComponent"));
 	HealthComponet->SetupAttachment(GetRootComponent());
@@ -56,14 +57,7 @@ void AEnemy::BeginPlay()
 	
 
 }
-void AEnemy::PlayHitReactionMontage(const FName& sectionName)
-{
-	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
-	if (animInstance) {
-		animInstance->Montage_Play(hitReactionMontage);
-		animInstance->Montage_JumpToSection(sectionName, hitReactionMontage);
-	}
-}
+
 
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
@@ -84,7 +78,7 @@ void AEnemy::MoveToTarget( AActor* target)
 	if (enemyController) {
 		FAIMoveRequest moveRequest;
 		moveRequest.SetGoalActor(target);
-		moveRequest.SetAcceptanceRadius(10.f);
+		moveRequest.SetAcceptanceRadius(acceptanceRadius);
 		moveRequest.SetReachTestIncludesAgentRadius(false);
 		FNavPathSharedPtr navPath;
 		enemyController->MoveTo(moveRequest, &navPath);
@@ -240,14 +234,6 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 	}
 }
 
-void AEnemy::PlayHitReaction(double angle)
-{
-	FName sectionToPlay = FName("FromBack");
-	if (angle <= 45 && angle > -45) sectionToPlay = FName("FromFront");
-	else if (angle <= -45 && angle > -135) sectionToPlay = FName("FromLeft");
-	else if (angle > 45 && angle <= 135) sectionToPlay = FName("FromRight");
-	PlayHitReactionMontage(sectionToPlay);
-}
 
 void AEnemy::OnDeath()
 {

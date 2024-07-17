@@ -61,7 +61,7 @@ void AGameCharacter::EKeyPressed()
 	}
 }
 
-void AGameCharacter::AttackWithSword()
+void AGameCharacter::Attack()
 {
 	if (actionState == EActionState::EAS_Unoccupied && characterState== ECharacterState::ECS_Equiped) {
 		PlayAttackMontage();
@@ -94,7 +94,7 @@ void AGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(FName("Equip"), IE_Pressed, this, &AGameCharacter::EKeyPressed);
-	PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &AGameCharacter::AttackWithSword);
+	PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &AGameCharacter::Attack);
 
 }
 
@@ -185,10 +185,3 @@ void AGameCharacter::FinishEquipping()
 	actionState = EActionState::EAS_Unoccupied;
 }
 
-void AGameCharacter::HandleCollisionForBoxCollider(ECollisionEnabled::Type Collisiontype)
-{
-	equipWeapon->GetBoxCollider()->SetCollisionEnabled(Collisiontype);
-	if (Collisiontype == ECollisionEnabled::QueryOnly) {
-		equipWeapon->ignoreActor = nullptr;
-	}
-}

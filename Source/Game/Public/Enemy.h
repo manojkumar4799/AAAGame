@@ -2,16 +2,15 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "HitInterface.h"
+#include "CoreMinimal.h" 
 #include "Characeter/CharacterTypes.h"
+#include "Characeter/BaseCharacter.h"
 #include "Enemy.generated.h"
 
 
 
 UCLASS()
-class GAME_API AEnemy : public ACharacter, public IHitInterface
+class GAME_API AEnemy : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -23,21 +22,22 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void PlayHitReactionMontage(const FName& sectionName);
 
-	UPROPERTY(EditAnywhere, Category = "Animation")
-	UAnimMontage* hitReactionMontage;
+	//BaseClass
 
-	UPROPERTY(EditAnywhere, Category = "Animation")
-	UAnimMontage* deathMontage;
+	
 
 	UPROPERTY(BlueprintReadOnly)
 	EDeathStatus  deathStatus = EDeathStatus::EDS_Alive;
 
-	UPROPERTY(EditAnywhere)
-	float triggerRadius = 600;
+	
 
 	//Navigation
+	UPROPERTY(EditAnywhere)
+	float chaseRadius = 600;
+
+	UPROPERTY(EditAnywhere)
+	float attackRadius = 150;
 
 	UPROPERTY()
 	AActor* combatTarget = nullptr;
@@ -54,6 +54,9 @@ protected:
 	//Controllers
 	class AAIController* enemyController;
 
+	UPROPERTY(EditAnywhere)
+	float acceptanceRadius= 30.f;
+
 
 public:	
 	// Called every frame
@@ -63,28 +66,23 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual void GetHit_Implementation(const FVector& hitImpactPoint);
+	virtual void GetHit_Implementation(const FVector& hitImpactPoint);//BaseClass
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	
 
 
 private:
-	void PlayHitReaction(double angle);
+	
 
-	void OnDeath();
+	void OnDeath();//BaseClass
 
 	UFUNCTION()
 	void OnPawnSeen(APawn* seenPawn);
 
-	UPROPERTY(EditAnywhere, Category = "Sound")
-	USoundBase* hitSound;
+	
 
-	UPROPERTY(EditAnywhere, Category = VFX)
-	UParticleSystem* hitVFX;
-
-	UPROPERTY(EditAnywhere)
-	class UAttributeComponent* attributeComp;
+//BaseClass
 
 	UPROPERTY(EditAnywhere)
 	class UHealthBarComponent* HealthComponet;
@@ -106,11 +104,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UPawnSensingComponent* pawnSense;
 
-	EEnemyState currentEnemyState = EEnemyState::EES_Patrolling;
-
 	
 
-
+	EEnemyState currentEnemyState = EEnemyState::EES_Patrolling;
 
 
 };

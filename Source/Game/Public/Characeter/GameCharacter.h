@@ -2,20 +2,20 @@
 
 #pragma once
 
+#include "Characeter/BaseCharacter.h"
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
 #include "Characeter/CharacterTypes.h"
 #include "GameCharacter.generated.h"
+
 
 class USpringArmComponent;
 class UCameraComponent;
 class AActorItem;
-class AWeapon;
 
 
 
 UCLASS()
-class GAME_API AGameCharacter : public ACharacter
+class GAME_API AGameCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -27,9 +27,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	void EKeyPressed();
-	void AttackWithSword();
-	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
+	void Attack() override;
+	void AttackEnd() override;
 
 	UFUNCTION(BlueprintCallable)
 	void EquipSword();
@@ -49,8 +48,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION(BlueprintCallable)
-	void HandleCollisionForBoxCollider(ECollisionEnabled::Type Collisiontype);
 private:
 	void MoveForward(float value);
 	void Turn(float value);
@@ -75,8 +72,7 @@ private:
 
 	ECharacterState characterState = ECharacterState::ECS_Unequiped;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Anim Monatge")
-	UAnimMontage* echoAttackMontage;
+	//BaseClass
 
 	UPROPERTY(EditDefaultsOnly, Category = "Anim Monatge")
 	UAnimMontage* echoEquipMontage;
@@ -85,8 +81,6 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
 	EActionState actionState = EActionState::EAS_Unoccupied;
 
-	UPROPERTY(VisibleAnywhere)
-	AWeapon* equipWeapon;
 
 	
 

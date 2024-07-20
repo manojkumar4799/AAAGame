@@ -83,6 +83,10 @@ private:
 	UFUNCTION()
 	void OnPawnSeen(APawn* seenPawn);
 
+	void Attack();
+
+	void PlayAttackMontage();
+
 	
 
 //BaseClass

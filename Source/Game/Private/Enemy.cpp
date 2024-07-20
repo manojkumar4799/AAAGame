@@ -86,13 +86,13 @@ void AEnemy::MoveToTarget( AActor* target)
 		moveRequest.SetReachTestIncludesAgentRadius(false);
 		FNavPathSharedPtr navPath;
 		enemyController->MoveTo(moveRequest, &navPath);
-		TArray<FNavPathPoint> pathPoints = navPath->GetPathPoints();
+		/*TArray<FNavPathPoint> pathPoints = navPath->GetPathPoints();
 		
 		if (navPath->GetPathPoints().Num() > 0) {
 			for (auto point : patroltargetPoints) {
 				DrawDebugSphere(GetWorld(), point->GetActorLocation(), 10.f, 20.F, FColor::Green, true);
 			}
-		}
+		}*/
 
 	}
 }
@@ -148,6 +148,7 @@ void AEnemy::CombatCheck()
 		}
 		else if (IstargetInRadius(combatTarget, attackRadius) && currentEnemyState!= EEnemyState::EES_Attacking) {
 			currentEnemyState = EEnemyState::EES_Attacking;
+			Attack();
 			UE_LOG(LogTemp, Warning, TEXT("Attacking"));
 
 		}
@@ -227,7 +228,7 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 	}
 	if (seenPawn->ActorHasTag("EchoCharacter")) {
 		
-		if (currentEnemyState == EEnemyState::EES_Attacking && !IstargetInRadius(seenPawn, chaseRadius)) {
+		if (currentEnemyState == EEnemyState::EES_Attacking || !IstargetInRadius(seenPawn, chaseRadius)) {
 			return;
 		}
 		
@@ -238,6 +239,32 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 		combatTarget = seenPawn;
 		MoveToTarget(combatTarget);
 	}
+}
+
+void AEnemy::Attack()
+{
+	Super::Attack();
+	if (currentEnemyState == EEnemyState::EES_Attacking) PlayAttackMontage();	
+	
+}
+
+void AEnemy::PlayAttackMontage()
+{
+	Super::PlayAttackMontage();
+	UAnimInstance* enemyAnimInstance = GetMesh()->GetAnimInstance();
+
+	if (enemyAnimInstance) {
+
+		FName sectionname = FName("");
+		int32 selectedSection = FMath::RandRange(0, 2);
+		TArray<FName> AttackMontageSections;
+		AttackMontageSections.Add(FName("Attack1"));
+		AttackMontageSections.Add(FName("Attack2"));
+		AttackMontageSections.Add(FName("Attack3"));
+		enemyAnimInstance->Montage_Play(attackMontage);
+		enemyAnimInstance->Montage_JumpToSection(AttackMontageSections[selectedSection], attackMontage);
+	}
+
 }
 
 

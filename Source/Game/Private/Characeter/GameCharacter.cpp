@@ -138,9 +138,9 @@ void AGameCharacter::PlayAttackMontage()
 {
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 
-	if (animInstance && echoAttackMontage) {
+	if (animInstance && attackMontage) {
 
-		animInstance->Montage_Play(echoAttackMontage);
+		animInstance->Montage_Play(attackMontage);
 		int32 sectionToPlay = FMath::RandRange(0, 1);
 		FName sectionName = FName();
 
@@ -154,7 +154,7 @@ void AGameCharacter::PlayAttackMontage()
 			sectionName = FName("Attack2");
 			break;
 		}
-		animInstance->Montage_JumpToSection(sectionName, echoAttackMontage);
+		animInstance->Montage_JumpToSection(sectionName, attackMontage);
 	}
 }
 

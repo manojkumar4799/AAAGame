@@ -11,7 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
 #include "Perception/PawnSensingComponent.h"
-
+#include "weapons/Weapon.h"
 #include "Attributes/AttributeComponent.h"
 
 // Sets default values
@@ -54,8 +54,12 @@ void AEnemy::BeginPlay()
 	if (pawnSense) {
 		pawnSense->OnSeePawn.AddDynamic(this, &AEnemy::OnPawnSeen);
 	}
-	
 
+	if (weaponClass) {
+		equipWeapon = GetWorld()->SpawnActor<AWeapon>(weaponClass);
+		equipWeapon->Equip(GetMesh(), FName("WeaponRightHandSocket"), this, this);
+		
+	}
 }
 
 
@@ -84,7 +88,7 @@ void AEnemy::MoveToTarget( AActor* target)
 		enemyController->MoveTo(moveRequest, &navPath);
 		TArray<FNavPathPoint> pathPoints = navPath->GetPathPoints();
 		
-		if (pathPoints.Num() > 0) {
+		if (navPath->GetPathPoints().Num() > 0) {
 			for (auto point : patroltargetPoints) {
 				DrawDebugSphere(GetWorld(), point->GetActorLocation(), 10.f, 20.F, FColor::Green, true);
 			}
@@ -222,10 +226,12 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 		return;
 	}
 	if (seenPawn->ActorHasTag("EchoCharacter")) {
-		UE_LOG(LogTemp, Warning, TEXT("Saw Echo!"));
-		if (currentEnemyState == EEnemyState::EES_Attacking) {
+		
+		if (currentEnemyState == EEnemyState::EES_Attacking && !IstargetInRadius(seenPawn, chaseRadius)) {
 			return;
 		}
+		
+		UE_LOG(LogTemp, Warning, TEXT("Saw Echo!, Start Chasing"));
 		currentEnemyState = EEnemyState::EES_Chasing;
 		GetWorldTimerManager().ClearTimer(patrolTimer);
 		GetCharacterMovement()->MaxWalkSpeed = 300;

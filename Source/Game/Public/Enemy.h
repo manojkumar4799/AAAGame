@@ -42,11 +42,11 @@ protected:
 	UPROPERTY()
 	AActor* combatTarget = nullptr;
 
-	UPROPERTY(EditInstanceOnly)
+	//UPROPERTY(EditInstanceOnly)
 	AActor* patrolTarget;
 
 	UPROPERTY(EditInstanceOnly)
-	double patrolPointRadius = 15;
+	double patrolPointRadius = 100;
 
 	UPROPERTY(EditInstanceOnly)
 	TArray<AActor*> patroltargetPoints;
@@ -56,6 +56,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float acceptanceRadius= 30.f;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AWeapon> weaponClass;
 
 
 public:	

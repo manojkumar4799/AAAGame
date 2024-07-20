@@ -30,7 +30,7 @@ protected:
 
 	class AWeapon* equipWeapon;
 	UPROPERTY(EditDefaultsOnly, Category = "Anim Monatge")
-	UAnimMontage* echoAttackMontage;
+	UAnimMontage* attackMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* hitReactionMontage;

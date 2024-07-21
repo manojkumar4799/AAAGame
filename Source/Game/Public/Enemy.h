@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h" 
-#include "Characeter/CharacterTypes.h"
+
 #include "Characeter/BaseCharacter.h"
 #include "Enemy.generated.h"
 
@@ -27,8 +27,7 @@ protected:
 
 	
 
-	UPROPERTY(BlueprintReadOnly)
-	EDeathStatus  deathStatus = EDeathStatus::EDS_DeathPose1;
+	
 
 	
 
@@ -83,7 +82,7 @@ public:
 private:
 	
 
-	void OnDeath();
+	void OnDeath() override;
 
 
 	//AI
@@ -91,8 +90,6 @@ private:
 	void OnPawnSeen(APawn* seenPawn);
 
 	void Attack();
-
-	void PlayAttackMontage();
 
 	void StartPatrol();
 

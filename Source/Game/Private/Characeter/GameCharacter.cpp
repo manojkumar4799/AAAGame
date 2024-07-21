@@ -134,29 +134,7 @@ void AGameCharacter::MoveRight(float value)
 	}	
 }
 
-void AGameCharacter::PlayAttackMontage()
-{
-	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 
-	if (animInstance && attackMontage) {
-
-		animInstance->Montage_Play(attackMontage);
-		int32 sectionToPlay = FMath::RandRange(0, 1);
-		FName sectionName = FName();
-
-		switch (sectionToPlay)
-		{
-		case 0:
-			sectionName = FName("Attack1");
-			break;
-
-		default:
-			sectionName = FName("Attack2");
-			break;
-		}
-		animInstance->Montage_JumpToSection(sectionName, attackMontage);
-	}
-}
 
 void AGameCharacter::PlayEquipMontage(FName sectionName)
 {

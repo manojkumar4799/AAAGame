@@ -224,20 +224,6 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 void AEnemy::OnPawnSeen(APawn* seenPawn)
 {
-	/*if (currentEnemyState == EEnemyState::EES_Dead) {
-		return;
-	}
-	if (seenPawn->ActorHasTag("EchoCharacter")) {
-		UE_LOG(LogTemp, Warning, TEXT("Saw Echo!"));
-		if (currentEnemyState == EEnemyState::EES_Attacking) {
-			return;
-		}
-		currentEnemyState = EEnemyState::EES_Chasing;
-		GetWorldTimerManager().ClearTimer(patrolTimer);
-		GetCharacterMovement()->MaxWalkSpeed = 300;
-		combatTarget = seenPawn;
-		MoveToTarget(combatTarget);
-	}*/
 
 	bool shouldChase = currentEnemyState != EEnemyState::EES_Dead
 		&& seenPawn->ActorHasTag("EchoCharacter")
@@ -249,8 +235,7 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 		ClearTimer(patrolTimer);
 		combatTarget = seenPawn;
 		StartChasing();
-		
-	
+			
 }
 
 void AEnemy::Attack()
@@ -260,24 +245,7 @@ void AEnemy::Attack()
 	
 }
 
-void AEnemy::PlayAttackMontage()
-{
-	Super::PlayAttackMontage();
-	UAnimInstance* enemyAnimInstance = GetMesh()->GetAnimInstance();
 
-	if (enemyAnimInstance) {
-
-		FName sectionname = FName("");
-		int32 selectedSection = FMath::RandRange(0, 2);
-		TArray<FName> AttackMontageSections;
-		AttackMontageSections.Add(FName("Attack1"));
-		AttackMontageSections.Add(FName("Attack2"));
-		AttackMontageSections.Add(FName("Attack3"));
-		enemyAnimInstance->Montage_Play(attackMontage);
-		enemyAnimInstance->Montage_JumpToSection(AttackMontageSections[selectedSection], attackMontage);
-	}
-
-}
 
 void AEnemy::StartPatrol()
 {
@@ -350,21 +318,13 @@ bool AEnemy::IsDead()
 
 void AEnemy::OnDeath()
 {
+	Super::OnDeath();
 	currentEnemyState = EEnemyState::EES_Dead;
+	ClearTimer(AttackTimer);
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 	if (HealthComponet) HealthComponet->SetVisibility(false);
-	if (animInstance) {
-		animInstance->Montage_Play(deathMontage);
-		TArray<FName> selection;
-		selection.Add("Death1");
-		selection.Add("Death2");
-		selection.Add("Death3");
-		selection.Add("Death4");
-		int32 random = FMath::RandRange(0, selection.Num() - 1);
-		deathStatus = static_cast<EDeathStatus>(random);
-		animInstance->Montage_JumpToSection(selection[random],deathMontage);
+	PlayDeathMontage();	
 
-	}
 }
 
 bool AEnemy::IstargetInRadius(AActor* targetActor, double radius)

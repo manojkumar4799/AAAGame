@@ -53,7 +53,6 @@ private:
 	void Turn(float value);
 	void LookUp(float value);
 	void MoveRight(float value);
-	void PlayAttackMontage();
 	void PlayEquipMontage(FName sectionName);
 
 	UPROPERTY(VisibleAnywhere)

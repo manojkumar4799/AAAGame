@@ -4,6 +4,7 @@
 #include "Characeter/BaseCharacter.h"
 #include "Components/BoxComponent.h"
 
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Attributes/AttributeComponent.h"
@@ -49,6 +50,31 @@ void ABaseCharacter::Attack()
 
 void ABaseCharacter::PlayAttackMontage()
 {
+	if (AttackMontageSections.Num() > 0 ) {
+		int32 randomSelectionIndex = FMath::RandRange(0, AttackMontageSections.Num() - 1);
+		PlayMontageSection(attackMontage, AttackMontageSections[randomSelectionIndex]);
+	}
+}
+
+void ABaseCharacter::PlayDeathMontage()
+{
+	if (DeathMontageSections.Num() > 0) {
+		int32 randomSelectionIndex = FMath::RandRange(0, DeathMontageSections.Num() - 1);
+		TEnumAsByte<EDeathPose> Pose(randomSelectionIndex);
+		deathPose = Pose;
+		PlayMontageSection(deathMontage, DeathMontageSections[randomSelectionIndex]);
+	}
+}
+
+
+
+void ABaseCharacter::PlayMontageSection(UAnimMontage* montage, const FName sectionName)
+{
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (animInstance && montage) {
+		animInstance->Montage_Play(montage);
+		animInstance->Montage_JumpToSection(sectionName, montage);
+	}
 }
 
 void ABaseCharacter::AttackEnd()
@@ -57,6 +83,7 @@ void ABaseCharacter::AttackEnd()
 
 void ABaseCharacter::OnDeath()
 {
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABaseCharacter::PlayHitReactionMontage(const FName& sectionName)
@@ -76,6 +103,7 @@ void ABaseCharacter::PlayHitReaction(double angle)
 	else if (angle > 45 && angle <= 135) sectionToPlay = FName("FromRight");
 	PlayHitReactionMontage(sectionToPlay);
 }
+
 
 void ABaseCharacter::PlayHitSound(const FVector& hitImpactPoint)
 {

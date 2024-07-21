@@ -28,7 +28,7 @@ protected:
 	
 
 	UPROPERTY(BlueprintReadOnly)
-	EDeathStatus  deathStatus = EDeathStatus::EDS_Alive;
+	EDeathStatus  deathStatus = EDeathStatus::EDS_DeathPose1;
 
 	
 
@@ -60,6 +60,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AWeapon> weaponClass;
 
+	UPROPERTY(BlueprintReadOnly)
+	EEnemyState currentEnemyState = EEnemyState::EES_Patrolling;
+
 
 public:	
 	// Called every frame
@@ -69,7 +72,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual void GetHit_Implementation(const FVector& hitImpactPoint);//BaseClass
+	virtual void GetHit_Implementation(const FVector& hitImpactPoint);
+	
+	//BaseClass
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	
@@ -78,14 +83,42 @@ public:
 private:
 	
 
-	void OnDeath();//BaseClass
+	void OnDeath();
 
+
+	//AI
 	UFUNCTION()
 	void OnPawnSeen(APawn* seenPawn);
 
 	void Attack();
 
 	void PlayAttackMontage();
+
+	void StartPatrol();
+
+	void HandleHealthBar(bool bShoulbBeVisible);
+
+	void LoseInterestTowardsPlayer();
+
+	bool IsOutofChaseRadius();
+
+	void StartChasing();
+
+	bool IsOutOfAttackRadius();
+
+	bool IsChasing();
+	bool IsInsideAttackRadius();
+	bool IsAttacking();
+
+	FTimerHandle AttackTimer;
+
+	void StartAttckTimer();
+
+	void ClearTimer(FTimerHandle timer);
+
+	bool IsDead();
+	
+	void DebugHitPositions(const FVector& hitImpactPoint);
 
 	
 
@@ -113,7 +146,7 @@ private:
 
 	
 
-	EEnemyState currentEnemyState = EEnemyState::EES_Patrolling;
+	
 
 
 };

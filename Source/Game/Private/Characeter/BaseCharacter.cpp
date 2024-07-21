@@ -4,6 +4,8 @@
 #include "Characeter/BaseCharacter.h"
 #include "Components/BoxComponent.h"
 
+#include "Kismet/GameplayStatics.h"
+
 #include "Attributes/AttributeComponent.h"
 #include "weapons/Weapon.h"
 
@@ -73,6 +75,22 @@ void ABaseCharacter::PlayHitReaction(double angle)
 	else if (angle <= -45 && angle > -135) sectionToPlay = FName("FromLeft");
 	else if (angle > 45 && angle <= 135) sectionToPlay = FName("FromRight");
 	PlayHitReactionMontage(sectionToPlay);
+}
+
+void ABaseCharacter::PlayHitSound(const FVector& hitImpactPoint)
+{
+	if (hitSound) UGameplayStatics::PlaySoundAtLocation(this, hitSound, hitImpactPoint);
+}
+
+void ABaseCharacter::PlayHitVFX(const FVector& hitImpactPoint)
+{
+	const FVector forwardVector = GetActorForwardVector();
+
+	const FVector LowerHitPoint(hitImpactPoint.X, hitImpactPoint.Y, GetActorLocation().Z);
+	const FVector toHitPoint = (LowerHitPoint - GetActorLocation()).GetSafeNormal();
+
+
+	if (hitVFX)	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), hitVFX, hitImpactPoint);
 }
 
 

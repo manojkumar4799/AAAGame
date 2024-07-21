@@ -27,6 +27,9 @@ protected:
 	void PlayHitReactionMontage(const FName& sectionName);
 	void PlayHitReaction(double angle);
 
+	virtual void PlayHitSound(const FVector& hitImpactPoint);
+	virtual void PlayHitVFX(const FVector& hitImpactPoint);
+
 
 	class AWeapon* equipWeapon;
 	UPROPERTY(EditDefaultsOnly, Category = "Anim Monatge")

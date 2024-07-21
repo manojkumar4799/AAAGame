@@ -5,13 +5,12 @@
 #include "Components/CapsuleComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Kismet/GameplayStatics.h"
 #include "Components/WidgetComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
 #include "Perception/PawnSensingComponent.h"
-
+#include "weapons/Weapon.h"
 #include "Attributes/AttributeComponent.h"
 
 // Sets default values
@@ -54,8 +53,12 @@ void AEnemy::BeginPlay()
 	if (pawnSense) {
 		pawnSense->OnSeePawn.AddDynamic(this, &AEnemy::OnPawnSeen);
 	}
-	
 
+	if (weaponClass) {
+		equipWeapon = GetWorld()->SpawnActor<AWeapon>(weaponClass);
+		equipWeapon->Equip(GetMesh(), FName("WeaponRightHandSocket"), this, this);
+		
+	}
 }
 
 
@@ -63,7 +66,7 @@ void AEnemy::BeginPlay()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (currentEnemyState == EEnemyState::EES_Dead) {
+	if (IsDead()) {
 		return;
 	}
 
@@ -82,13 +85,13 @@ void AEnemy::MoveToTarget( AActor* target)
 		moveRequest.SetReachTestIncludesAgentRadius(false);
 		FNavPathSharedPtr navPath;
 		enemyController->MoveTo(moveRequest, &navPath);
-		TArray<FNavPathPoint> pathPoints = navPath->GetPathPoints();
+		/*TArray<FNavPathPoint> pathPoints = navPath->GetPathPoints();
 		
-		if (pathPoints.Num() > 0) {
+		if (navPath->GetPathPoints().Num() > 0) {
 			for (auto point : patroltargetPoints) {
 				DrawDebugSphere(GetWorld(), point->GetActorLocation(), 10.f, 20.F, FColor::Green, true);
 			}
-		}
+		}*/
 
 	}
 }
@@ -124,26 +127,21 @@ void AEnemy::PatrolCheck()
 void AEnemy::CombatCheck()
 {
 	if (combatTarget) {
-		const double distanceToTarget = (combatTarget->GetActorLocation() - GetActorLocation()).Size();
 
-		//out of chasing radius
-		if (!IstargetInRadius(combatTarget, chaseRadius)) {
-			combatTarget = nullptr;
-			if (HealthComponet) HealthComponet->SetVisibility(false);
-			currentEnemyState = EEnemyState::EES_Patrolling;
-			GetCharacterMovement()->MaxWalkSpeed = 125.f;
-			MoveToTarget(patrolTarget);
+		if (IsOutofChaseRadius()) {
+			ClearTimer(AttackTimer);
+			LoseInterestTowardsPlayer();
+			StartPatrol();
 			UE_LOG(LogTemp, Warning, TEXT("Lost Interest"));
 		}
-		else if (!IstargetInRadius(combatTarget, attackRadius) && currentEnemyState != EEnemyState::EES_Chasing) {
-			//out of attack radius
-			currentEnemyState = EEnemyState::EES_Chasing;
-			GetCharacterMovement()->MaxWalkSpeed = 300.f;
-			MoveToTarget(combatTarget);
+		else if (IsOutOfAttackRadius() && !IsChasing()) {
+	
+			ClearTimer(AttackTimer);
+			StartChasing();
 			UE_LOG(LogTemp, Warning, TEXT("Chase Player, Not in Attack Radius"));
 		}
-		else if (IstargetInRadius(combatTarget, attackRadius) && currentEnemyState!= EEnemyState::EES_Attacking) {
-			currentEnemyState = EEnemyState::EES_Attacking;
+		else if (IsInsideAttackRadius() && !IsAttacking()) {
+			StartAttckTimer();
 			UE_LOG(LogTemp, Warning, TEXT("Attacking"));
 
 		}
@@ -164,40 +162,48 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
 {
+	HandleHealthBar(true);
 	DrawDebugSphere( GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
-	UE_LOG(LogTemp, Warning, TEXT("GEtHotFunction "));
+	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction "));
+	
+	PlayHitVFX(hitImpactPoint);
+	PlayHitSound(hitImpactPoint);
+	DebugHitPositions(hitImpactPoint);
+}
 
+void AEnemy::DebugHitPositions(const FVector& hitImpactPoint)
+{
+	
+	
 	const FVector forwardVector = GetActorForwardVector();
 
 	const FVector LowerHitPoint(hitImpactPoint.X, hitImpactPoint.Y, GetActorLocation().Z);
 	const FVector toHitPoint = (LowerHitPoint - GetActorLocation()).GetSafeNormal();
-	
-	if (HealthComponet) HealthComponet->SetVisibility(true);
-	if(hitVFX)	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), hitVFX, hitImpactPoint);
 
+	/** ForDebugging*/
 	// forward * toHit =|forward| |toHit| CosTheta
-	 double CosTheta= FVector::DotProduct(forwardVector, toHitPoint);
-	 FVector crossProduct= FVector::CrossProduct(forwardVector, toHitPoint);
-	 double radains= FMath::Acos(CosTheta);
-	 double degrees = FMath::RadiansToDegrees(radains);
+	double CosTheta = FVector::DotProduct(forwardVector, toHitPoint);
+	FVector crossProduct = FVector::CrossProduct(forwardVector, toHitPoint);
+	double radains = FMath::Acos(CosTheta);
+	double degrees = FMath::RadiansToDegrees(radains);
 
-	 if (crossProduct.Z < 0) {
-		 degrees *= -1;
-	 }
+	if (crossProduct.Z < 0) {
+		degrees *= -1;
+	}
 
-	 if (attributeComp->IsAlive()) PlayHitReaction(degrees);
-	 else OnDeath();
+	if (attributeComp->IsAlive()) PlayHitReaction(degrees);
+	else OnDeath();
 
-	 UGameplayStatics::PlaySoundAtLocation(this, hitSound, hitImpactPoint);
+	
 
-	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + crossProduct.GetSafeNormal() * 70,7,FLinearColor::Green, 5,2);
-	 if (GEngine) {
-		 GEngine->AddOnScreenDebugMessage(1, 5, FColor::Black, FString::Printf(TEXT("Degrees: %f"), degrees));
-	 }
-	 
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + crossProduct.GetSafeNormal() * 70, 7, FLinearColor::Green, 5, 2);
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(1, 5, FColor::Black, FString::Printf(TEXT("Degrees: %f"), degrees));
+	}
 
-	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 70, 7, FLinearColor::Yellow, 5,2);
-	 UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHitPoint * 70, 7, FLinearColor::Red, 5,2);
+
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 70, 7, FLinearColor::Yellow, 5, 2);
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHitPoint * 70, 7, FLinearColor::Red, 5, 2);
 }
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -218,7 +224,7 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 void AEnemy::OnPawnSeen(APawn* seenPawn)
 {
-	if (currentEnemyState == EEnemyState::EES_Dead) {
+	/*if (currentEnemyState == EEnemyState::EES_Dead) {
 		return;
 	}
 	if (seenPawn->ActorHasTag("EchoCharacter")) {
@@ -231,7 +237,114 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 		GetCharacterMovement()->MaxWalkSpeed = 300;
 		combatTarget = seenPawn;
 		MoveToTarget(combatTarget);
+	}*/
+
+	bool shouldChase = currentEnemyState != EEnemyState::EES_Dead
+		&& seenPawn->ActorHasTag("EchoCharacter")
+		&& currentEnemyState != EEnemyState::EES_Attacking;
+	
+	if (!shouldChase) return;
+
+		UE_LOG(LogTemp, Warning, TEXT("Saw Echo!, Start Chasing"));
+		ClearTimer(patrolTimer);
+		combatTarget = seenPawn;
+		StartChasing();
+		
+	
+}
+
+void AEnemy::Attack()
+{
+	Super::Attack();
+	if (currentEnemyState == EEnemyState::EES_Attacking) PlayAttackMontage();	
+	
+}
+
+void AEnemy::PlayAttackMontage()
+{
+	Super::PlayAttackMontage();
+	UAnimInstance* enemyAnimInstance = GetMesh()->GetAnimInstance();
+
+	if (enemyAnimInstance) {
+
+		FName sectionname = FName("");
+		int32 selectedSection = FMath::RandRange(0, 2);
+		TArray<FName> AttackMontageSections;
+		AttackMontageSections.Add(FName("Attack1"));
+		AttackMontageSections.Add(FName("Attack2"));
+		AttackMontageSections.Add(FName("Attack3"));
+		enemyAnimInstance->Montage_Play(attackMontage);
+		enemyAnimInstance->Montage_JumpToSection(AttackMontageSections[selectedSection], attackMontage);
 	}
+
+}
+
+void AEnemy::StartPatrol()
+{
+	currentEnemyState = EEnemyState::EES_Patrolling;
+	GetCharacterMovement()->MaxWalkSpeed = 125.f;
+	MoveToTarget(patrolTarget);
+
+}
+
+void AEnemy::HandleHealthBar(bool bShoulbBeVisible)
+{
+	if (HealthComponet) HealthComponet->SetVisibility(bShoulbBeVisible);
+}
+
+void AEnemy::LoseInterestTowardsPlayer()
+{
+	combatTarget = nullptr;
+	HandleHealthBar(false);
+
+}
+
+bool AEnemy::IsOutofChaseRadius()
+{
+	return !IstargetInRadius(combatTarget, chaseRadius);
+}
+
+void AEnemy::StartChasing()
+{
+	currentEnemyState = EEnemyState::EES_Chasing;
+	GetCharacterMovement()->MaxWalkSpeed = 300.f;
+	MoveToTarget(combatTarget);
+}
+
+bool AEnemy::IsOutOfAttackRadius()
+{
+	return !IstargetInRadius(combatTarget, attackRadius);
+}
+
+bool AEnemy::IsChasing()
+{
+	return currentEnemyState==EEnemyState::EES_Chasing;
+}
+
+bool AEnemy::IsInsideAttackRadius()
+{
+	return IstargetInRadius(combatTarget, attackRadius);
+}
+
+bool AEnemy::IsAttacking()
+{
+	return currentEnemyState==EEnemyState::EES_Attacking;
+}
+
+void AEnemy::StartAttckTimer()
+{
+	currentEnemyState = EEnemyState::EES_Attacking;
+	GetWorldTimerManager().SetTimer(AttackTimer,this, &AEnemy::Attack, FMath::RandRange(0.5f, 1.5f));
+}
+
+void AEnemy::ClearTimer(FTimerHandle timer)
+{
+	GetWorldTimerManager().ClearTimer(timer);
+}
+
+bool AEnemy::IsDead()
+{
+	return currentEnemyState == EEnemyState::EES_Dead;
 }
 
 
@@ -248,7 +361,7 @@ void AEnemy::OnDeath()
 		selection.Add("Death3");
 		selection.Add("Death4");
 		int32 random = FMath::RandRange(0, selection.Num() - 1);
-		deathStatus = static_cast<EDeathStatus>(random+1);
+		deathStatus = static_cast<EDeathStatus>(random);
 		animInstance->Montage_JumpToSection(selection[random],deathMontage);
 
 	}
@@ -256,9 +369,11 @@ void AEnemy::OnDeath()
 
 bool AEnemy::IstargetInRadius(AActor* targetActor, double radius)
 {
+	
 	double distance = (targetActor->GetActorLocation() - GetActorLocation()).Size();
-	DrawDebugSphere(GetWorld(), targetActor->GetActorLocation(), 30.f, 20.F, FColor::Yellow);
-	DrawDebugSphere(GetWorld(), GetActorLocation(), 30.f, 20.F, FColor::Yellow);
+	DrawDebugSphere(GetWorld(), targetActor->GetActorLocation(), 30.f, 20.F, FColor::Blue);
+	DrawDebugSphere(GetWorld(), GetActorLocation(), 30.f, 20.F, FColor::Blue);
 	return distance <= radius;
+	
 }
 

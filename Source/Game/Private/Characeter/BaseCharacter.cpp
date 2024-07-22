@@ -79,6 +79,7 @@ void ABaseCharacter::PlayMontageSection(UAnimMontage* montage, const FName secti
 
 void ABaseCharacter::AttackEnd()
 {
+
 }
 
 void ABaseCharacter::OnDeath()

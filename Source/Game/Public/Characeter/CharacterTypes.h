@@ -28,5 +28,6 @@ enum class EEnemyState :uint8 {
 	EES_Chasing UMETA(DisplayName = "Chasing"),
 	EES_Attacking UMETA(DisplayName = "Attacking"),
 	EES_Dead UMETA(DisplayName = "Dead"),
-	EES_Engaged UMETA(DisplayName="EngagedInCombat")
+	EES_Engaged UMETA(DisplayName="EngagedInCombat"),
+	EES_NoState UMETA(DisplayName="NoState")
 };

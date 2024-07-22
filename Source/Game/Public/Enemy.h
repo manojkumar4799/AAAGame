@@ -26,8 +26,10 @@ protected:
 	//BaseClass
 
 	
-
+	/*Attack*/
+	void AttackEnd();
 	
+	bool IsEngaged();
 
 	
 
@@ -109,7 +111,7 @@ private:
 
 	FTimerHandle AttackTimer;
 
-	void StartAttckTimer();
+	void StartAttackTimer();
 
 	void ClearTimer(FTimerHandle timer);
 

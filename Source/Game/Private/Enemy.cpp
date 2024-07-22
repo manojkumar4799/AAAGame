@@ -61,6 +61,17 @@ void AEnemy::BeginPlay()
 	}
 }
 
+void AEnemy::AttackEnd()
+{
+    Super::AttackEnd();
+	currentEnemyState = EEnemyState::EES_NoState;
+}
+
+bool AEnemy::IsEngaged()
+{
+	return currentEnemyState==EEnemyState::EES_Engaged;
+}
+
 
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
@@ -140,8 +151,8 @@ void AEnemy::CombatCheck()
 			StartChasing();
 			UE_LOG(LogTemp, Warning, TEXT("Chase Player, Not in Attack Radius"));
 		}
-		else if (IsInsideAttackRadius() && !IsAttacking()) {
-			StartAttckTimer();
+		else if (IsInsideAttackRadius() && !IsAttacking() &&!IsEngaged() ) {
+			StartAttackTimer();
 			UE_LOG(LogTemp, Warning, TEXT("Attacking"));
 
 		}
@@ -241,7 +252,8 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 void AEnemy::Attack()
 {
 	Super::Attack();
-	if (currentEnemyState == EEnemyState::EES_Attacking) PlayAttackMontage();	
+	currentEnemyState = EEnemyState::EES_Engaged;
+	PlayAttackMontage();	
 	
 }
 
@@ -299,10 +311,10 @@ bool AEnemy::IsAttacking()
 	return currentEnemyState==EEnemyState::EES_Attacking;
 }
 
-void AEnemy::StartAttckTimer()
+void AEnemy::StartAttackTimer()
 {
 	currentEnemyState = EEnemyState::EES_Attacking;
-	GetWorldTimerManager().SetTimer(AttackTimer,this, &AEnemy::Attack, FMath::RandRange(0.5f, 1.5f));
+	GetWorldTimerManager().SetTimer(AttackTimer,this, &AEnemy::Attack, FMath::RandRange(1.f, 1.5f));
 }
 
 void AEnemy::ClearTimer(FTimerHandle timer)

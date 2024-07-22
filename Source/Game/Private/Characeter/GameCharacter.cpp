@@ -63,13 +63,13 @@ void AGameCharacter::EKeyPressed()
 
 void AGameCharacter::Attack()
 {
-	if (actionState == EActionState::EAS_Unoccupied && characterState== ECharacterState::ECS_Equiped) {
+	if (actionState == EActionState::EAS_Unoccupied && characterState == ECharacterState::ECS_Equiped) {
 		PlayAttackMontage();
 		actionState = EActionState::EAS_Attacking;
 	}
-	
-
 }
+
+
 
 void AGameCharacter::AttackEnd()
 {

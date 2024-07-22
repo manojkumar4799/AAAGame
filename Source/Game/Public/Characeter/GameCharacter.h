@@ -47,13 +47,18 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	/*IHitInterface*/
+	virtual void GetHit_Implementation(const FVector& hitImpactPoint);
+	/*IHitInterface*/
 private:
 	void MoveForward(float value);
 	void Turn(float value);
 	void LookUp(float value);
 	void MoveRight(float value);
 	void PlayEquipMontage(FName sectionName);
+	void EquipWeapon(AWeapon* weapon);
+	void UnequipWeapon();
+	void EquipWeaponFromback();
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* cameraArm;

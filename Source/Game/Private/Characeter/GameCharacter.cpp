@@ -28,13 +28,19 @@ AGameCharacter::AGameCharacter()
 	hair = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Hair"));
 	hair->SetupAttachment(GetMesh());
 
+	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+	GetMesh()->SetGenerateOverlapEvents(true);
+
 }
 
 // Called when the game starts or when spawned
 void AGameCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Tags.Add(FName("EchoCharacter"));
+	Tags.Add(FName("EngageableTarget"));
 	
 }
 
@@ -43,21 +49,14 @@ void AGameCharacter::EKeyPressed()
 	AWeapon* weapon = Cast<AWeapon>(overlapingItem);
 	if (weapon) {
 
-		weapon->Equip(GetMesh(), FName("RightHandSocket"),this, this);
-		characterState = ECharacterState::ECS_Equiped;
-		equipWeapon = weapon;
-		overlapingItem = nullptr;
+		EquipWeapon(weapon);
 	}
 	else if (characterState == ECharacterState::ECS_Equiped && actionState == EActionState::EAS_Unoccupied) {
 
-		PlayEquipMontage(FName("Unequip"));
-		characterState = ECharacterState::ECS_Unequiped;
-		actionState = EActionState::EAS_Equipping;
+		UnequipWeapon();
 	}
 	else if (equipWeapon && characterState == ECharacterState::ECS_Unequiped && actionState == EActionState::EAS_Unoccupied) {
-		PlayEquipMontage(FName("Equip"));
-		characterState = ECharacterState::ECS_Equiped;
-		actionState = EActionState::EAS_Equipping;
+		EquipWeaponFromback();
 	}
 }
 
@@ -96,6 +95,15 @@ void AGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(FName("Equip"), IE_Pressed, this, &AGameCharacter::EKeyPressed);
 	PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &AGameCharacter::Attack);
 
+}
+
+void AGameCharacter::GetHit_Implementation(const FVector& hitImpactPoint)
+{
+	DrawDebugSphere(GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
+	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction "));
+
+	PlayHitVFX(hitImpactPoint);
+	PlayHitSound(hitImpactPoint);
 }
 
 void AGameCharacter::MoveForward(float value)
@@ -143,6 +151,28 @@ void AGameCharacter::PlayEquipMontage(FName sectionName)
 	animInstance->Montage_Play(echoEquipMontage);
 	animInstance->Montage_JumpToSection(sectionName, echoEquipMontage);
 	
+}
+
+void AGameCharacter::EquipWeapon(AWeapon* weapon)
+{
+	weapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
+	characterState = ECharacterState::ECS_Equiped;
+	equipWeapon = weapon;
+	overlapingItem = nullptr;
+}
+
+void AGameCharacter::UnequipWeapon()
+{
+	PlayEquipMontage(FName("Unequip"));
+	characterState = ECharacterState::ECS_Unequiped;
+	actionState = EActionState::EAS_Equipping;
+}
+
+void AGameCharacter::EquipWeaponFromback()
+{
+	PlayEquipMontage(FName("Equip"));
+	characterState = ECharacterState::ECS_Equiped;
+	actionState = EActionState::EAS_Equipping;
 }
 
 //called from notifier and blueprint

@@ -37,6 +37,7 @@ AEnemy::AEnemy()
 	pawnSense = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensor"));
 	pawnSense->SightRadius = 4000.f;
 	pawnSense->SetPeripheralVisionAngle(75.f);
+	Tags.Add("Enemy");
 
 }
 
@@ -164,12 +165,6 @@ void AEnemy::PatrolTimerFinished()
 	MoveToTarget(patrolTarget);
 }
 
-// Called to bind functionality to input
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
 
 void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
 {
@@ -237,7 +232,7 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 {
 
 	bool shouldChase = currentEnemyState != EEnemyState::EES_Dead
-		&& seenPawn->ActorHasTag("EchoCharacter")
+		&& seenPawn->ActorHasTag("EngageableTarget")
 		&& currentEnemyState != EEnemyState::EES_Attacking;
 	
 	if (!shouldChase) return;

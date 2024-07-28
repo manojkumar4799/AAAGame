@@ -18,7 +18,7 @@ public:
 	// Sets default values for this actor's properties
 	ABreakableActor();
 	virtual void Tick(float DeltaTime) override;
-	void GetHit_Implementation(const FVector& hitImpactPoint);
+	void GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter);
 
 protected:
 	// Called when the game starts or when spawned

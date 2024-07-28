@@ -18,18 +18,15 @@ class GAME_API AWeapon : public AActorItem
 
 protected:
 	virtual void BeginPlay() override;
-    void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override ;
-	void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
-	
+    
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateFieldForce(const FVector& fieldForceLocation);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* boxTraceStartPoint;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USceneComponent* boxTraceEndPoint;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void CreateFieldForce(const FVector& fieldForceLocation);
+	USceneComponent* boxTraceEndPoint;	
 
 	
 
@@ -44,6 +41,17 @@ public:
 	AActor* ignoreActor;
 private:
 
+
+	UFUNCTION()
+	void OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	void BoxTrace(FHitResult& hitResult);
+
+
+	UPROPERTY(EditAnywhere)
+	FVector boxTraceExtent = FVector(5.f);
+	UPROPERTY(EditAnywhere)
+	bool bShowDebugTraceBox = false;
 	UPROPERTY(EditAnywhere)
 	USoundBase* bladeSound;
 
@@ -53,8 +61,5 @@ private:
 	UPROPERTY(EditAnywhere)
 	float damage = 20;
 
-	UFUNCTION()
-	void OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
 	
 };

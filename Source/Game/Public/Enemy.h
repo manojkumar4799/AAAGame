@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h" 
-#include "Characeter/CharacterTypes.h"
+
 #include "Characeter/BaseCharacter.h"
 #include "Enemy.generated.h"
 
@@ -15,34 +15,39 @@ class GAME_API AEnemy : public ABaseCharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AEnemy();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-
-	//BaseClass
+	virtual void BeginPlay() override;	
 
 	
-
-	UPROPERTY(BlueprintReadOnly)
-	EDeathStatus  deathStatus = EDeathStatus::EDS_DeathPose1;
-
+	/*Attack*/
+	void AttackEnd();
 	
+	bool IsEngaged();
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AWeapon> weaponClass;
+	/*Attack*/
+	/*MotionWarping*/
+	UFUNCTION(BlueprintCallable)
+	FVector GetTranslationWarpTarget();
 
-	//Navigation
+	UFUNCTION(BlueprintCallable)
+	FVector GetRotationWarpTarget();
+	/*MotionWarping*/
+
+	/*AI*/
+	
 	UPROPERTY(EditAnywhere)
 	float chaseRadius = 600;
 
 	UPROPERTY(EditAnywhere)
 	float attackRadius = 150;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	AActor* combatTarget = nullptr;
 
-	//UPROPERTY(EditInstanceOnly)
+	
 	AActor* patrolTarget;
 
 	UPROPERTY(EditInstanceOnly)
@@ -50,18 +55,20 @@ protected:
 
 	UPROPERTY(EditInstanceOnly)
 	TArray<AActor*> patroltargetPoints;
-
-	//Controllers
+	
 	class AAIController* enemyController;
 
 	UPROPERTY(EditAnywhere)
 	float acceptanceRadius= 30.f;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AWeapon> weaponClass;
-
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	EEnemyState currentEnemyState = EEnemyState::EES_Patrolling;
+	/*AI*/
+
+
+	
+
+	
 
 
 public:	
@@ -69,84 +76,61 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	
+	/*IHitInterface*/
+	virtual void GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter);
+	/*IHitInterface*/
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual void GetHit_Implementation(const FVector& hitImpactPoint);
-	
-	//BaseClass
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-
 	
-
 
 private:
 	
 
-	void OnDeath();
+	void OnDeath() override;
 
 
-	//AI
+	/*AI*/
 	UFUNCTION()
 	void OnPawnSeen(APawn* seenPawn);
-
 	void Attack();
-
-	void PlayAttackMontage();
-
 	void StartPatrol();
-
-	void HandleHealthBar(bool bShoulbBeVisible);
-
 	void LoseInterestTowardsPlayer();
-
 	bool IsOutofChaseRadius();
-
 	void StartChasing();
-
 	bool IsOutOfAttackRadius();
-
 	bool IsChasing();
 	bool IsInsideAttackRadius();
 	bool IsAttacking();
-
-	FTimerHandle AttackTimer;
-
-	void StartAttckTimer();
-
+	void StartAttackTimer();
 	void ClearTimer(FTimerHandle timer);
-
-	bool IsDead();
-	
-	void DebugHitPositions(const FVector& hitImpactPoint);
-
-	
-
-//BaseClass
-
-	UPROPERTY(EditAnywhere)
-	class UHealthBarComponent* HealthComponet;
-
-
-	//Navigation
+	bool IsDead();		
 	bool IstargetInRadius(AActor* targetActor, double radius);
 	void MoveToTarget(AActor* target);
-
 	void PatrolCheck();
 	void CombatCheck();
-
-	void PatrolTimerFinished();
-
+	void PatrolTimerFinished();	
 	
-
-	FTimerHandle patrolTimer;
 
 	UPROPERTY(VisibleAnywhere)
 	class UPawnSensingComponent* pawnSense;
+	/*AI*/
 
 	
 
-	
+	UPROPERTY(EditAnywhere)
+	double distanceFromTarget = 75.f;
+
+	/*Timers*/
+	FTimerHandle AttackTimer;
+	FTimerHandle patrolTimer;
+	/*Timers*/
+
+	/*Health*/
+	void HandleHealthBar(bool bShoulbBeVisible);
+
+	UPROPERTY(EditAnywhere)
+	class UHealthBarComponent* HealthComponet;
+	/*Health*/
 
 
 };

@@ -4,7 +4,6 @@
 #include "Enemy.h"
 #include "Components/CapsuleComponent.h"
 #include "DrawDebugHelpers.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Components/WidgetComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -37,6 +36,7 @@ AEnemy::AEnemy()
 	pawnSense = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensor"));
 	pawnSense->SightRadius = 4000.f;
 	pawnSense->SetPeripheralVisionAngle(75.f);
+	Tags.Add("Enemy");
 
 }
 
@@ -59,6 +59,17 @@ void AEnemy::BeginPlay()
 		equipWeapon->Equip(GetMesh(), FName("WeaponRightHandSocket"), this, this);
 		
 	}
+}
+
+void AEnemy::AttackEnd()
+{
+    Super::AttackEnd();
+	currentEnemyState = EEnemyState::EES_NoState;
+}
+
+bool AEnemy::IsEngaged()
+{
+	return currentEnemyState==EEnemyState::EES_Engaged;
 }
 
 
@@ -140,8 +151,8 @@ void AEnemy::CombatCheck()
 			StartChasing();
 			UE_LOG(LogTemp, Warning, TEXT("Chase Player, Not in Attack Radius"));
 		}
-		else if (IsInsideAttackRadius() && !IsAttacking()) {
-			StartAttckTimer();
+		else if (IsInsideAttackRadius() && !IsAttacking() &&!IsEngaged() ) {
+			StartAttackTimer();
 			UE_LOG(LogTemp, Warning, TEXT("Attacking"));
 
 		}
@@ -153,58 +164,41 @@ void AEnemy::PatrolTimerFinished()
 	MoveToTarget(patrolTarget);
 }
 
-// Called to bind functionality to input
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+FVector AEnemy::GetTranslationWarpTarget()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (combatTarget) {
 
+		FVector distanceVectorFromCombat = (GetActorLocation() - combatTarget->GetActorLocation()).GetSafeNormal();
+		distanceVectorFromCombat *= distanceFromTarget;
+		return combatTarget->GetActorLocation() + distanceVectorFromCombat;
+
+	}
+	return FVector();
 }
 
-void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
+FVector AEnemy::GetRotationWarpTarget()
 {
-	HandleHealthBar(true);
+	if (combatTarget) {
+		return combatTarget->GetActorLocation();
+	}
+	return FVector();
+}
+
+
+
+void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter)
+{
+    Super::GetHit_Implementation(hitImpactPoint, hitter);
+	if(attributeComp->IsAlive())HandleHealthBar(true);
+	ClearTimer(patrolTimer);
+	ClearTimer(AttackTimer);
+	StopPlayingMontage(attackMontage);
+	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
 	DrawDebugSphere( GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
-	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction "));
+	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction, enemy "));
 	
-	PlayHitVFX(hitImpactPoint);
-	PlayHitSound(hitImpactPoint);
-	DebugHitPositions(hitImpactPoint);
 }
 
-void AEnemy::DebugHitPositions(const FVector& hitImpactPoint)
-{
-	
-	
-	const FVector forwardVector = GetActorForwardVector();
-
-	const FVector LowerHitPoint(hitImpactPoint.X, hitImpactPoint.Y, GetActorLocation().Z);
-	const FVector toHitPoint = (LowerHitPoint - GetActorLocation()).GetSafeNormal();
-
-	/** ForDebugging*/
-	// forward * toHit =|forward| |toHit| CosTheta
-	double CosTheta = FVector::DotProduct(forwardVector, toHitPoint);
-	FVector crossProduct = FVector::CrossProduct(forwardVector, toHitPoint);
-	double radains = FMath::Acos(CosTheta);
-	double degrees = FMath::RadiansToDegrees(radains);
-
-	if (crossProduct.Z < 0) {
-		degrees *= -1;
-	}
-
-	if (attributeComp->IsAlive()) PlayHitReaction(degrees);
-	else OnDeath();
-
-	
-
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + crossProduct.GetSafeNormal() * 70, 7, FLinearColor::Green, 5, 2);
-	if (GEngine) {
-		GEngine->AddOnScreenDebugMessage(1, 5, FColor::Black, FString::Printf(TEXT("Degrees: %f"), degrees));
-	}
-
-
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 70, 7, FLinearColor::Yellow, 5, 2);
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHitPoint * 70, 7, FLinearColor::Red, 5, 2);
-}
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -214,9 +208,9 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		attributeComp->Receivedamage(DamageAmount);
 		HealthComponet->SetHealthPercent(attributeComp->GetHealthPercent());
 		combatTarget = EventInstigator->GetPawn();
-		currentEnemyState = EEnemyState::EES_Chasing;
-		GetCharacterMovement()->MaxWalkSpeed = 300.f;
-		MoveToTarget(combatTarget);
+		if (IsInsideAttackRadius()) {
+			currentEnemyState = EEnemyState::EES_Attacking;
+		}else StartChasing();
 	}
 	
 	return DamageAmount;
@@ -224,23 +218,9 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 void AEnemy::OnPawnSeen(APawn* seenPawn)
 {
-	/*if (currentEnemyState == EEnemyState::EES_Dead) {
-		return;
-	}
-	if (seenPawn->ActorHasTag("EchoCharacter")) {
-		UE_LOG(LogTemp, Warning, TEXT("Saw Echo!"));
-		if (currentEnemyState == EEnemyState::EES_Attacking) {
-			return;
-		}
-		currentEnemyState = EEnemyState::EES_Chasing;
-		GetWorldTimerManager().ClearTimer(patrolTimer);
-		GetCharacterMovement()->MaxWalkSpeed = 300;
-		combatTarget = seenPawn;
-		MoveToTarget(combatTarget);
-	}*/
 
 	bool shouldChase = currentEnemyState != EEnemyState::EES_Dead
-		&& seenPawn->ActorHasTag("EchoCharacter")
+		&& seenPawn->ActorHasTag("EngageableTarget")
 		&& currentEnemyState != EEnemyState::EES_Attacking;
 	
 	if (!shouldChase) return;
@@ -249,35 +229,18 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 		ClearTimer(patrolTimer);
 		combatTarget = seenPawn;
 		StartChasing();
-		
-	
+			
 }
 
 void AEnemy::Attack()
 {
 	Super::Attack();
-	if (currentEnemyState == EEnemyState::EES_Attacking) PlayAttackMontage();	
+	currentEnemyState = EEnemyState::EES_Engaged;
+	PlayAttackMontage();	
 	
 }
 
-void AEnemy::PlayAttackMontage()
-{
-	Super::PlayAttackMontage();
-	UAnimInstance* enemyAnimInstance = GetMesh()->GetAnimInstance();
 
-	if (enemyAnimInstance) {
-
-		FName sectionname = FName("");
-		int32 selectedSection = FMath::RandRange(0, 2);
-		TArray<FName> AttackMontageSections;
-		AttackMontageSections.Add(FName("Attack1"));
-		AttackMontageSections.Add(FName("Attack2"));
-		AttackMontageSections.Add(FName("Attack3"));
-		enemyAnimInstance->Montage_Play(attackMontage);
-		enemyAnimInstance->Montage_JumpToSection(AttackMontageSections[selectedSection], attackMontage);
-	}
-
-}
 
 void AEnemy::StartPatrol()
 {
@@ -306,6 +269,10 @@ bool AEnemy::IsOutofChaseRadius()
 
 void AEnemy::StartChasing()
 {
+
+	if (currentEnemyState == EEnemyState::EES_Engaged) {
+		return;// this wil make sure enemy wont chase while attacking and no foot sliding
+	}
 	currentEnemyState = EEnemyState::EES_Chasing;
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	MoveToTarget(combatTarget);
@@ -331,10 +298,10 @@ bool AEnemy::IsAttacking()
 	return currentEnemyState==EEnemyState::EES_Attacking;
 }
 
-void AEnemy::StartAttckTimer()
+void AEnemy::StartAttackTimer()
 {
 	currentEnemyState = EEnemyState::EES_Attacking;
-	GetWorldTimerManager().SetTimer(AttackTimer,this, &AEnemy::Attack, FMath::RandRange(0.5f, 1.5f));
+	GetWorldTimerManager().SetTimer(AttackTimer,this, &AEnemy::Attack, FMath::RandRange(1.f, 1.5f));
 }
 
 void AEnemy::ClearTimer(FTimerHandle timer)
@@ -350,21 +317,14 @@ bool AEnemy::IsDead()
 
 void AEnemy::OnDeath()
 {
+	Super::OnDeath();
 	currentEnemyState = EEnemyState::EES_Dead;
+	ClearTimer(AttackTimer);
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 	if (HealthComponet) HealthComponet->SetVisibility(false);
-	if (animInstance) {
-		animInstance->Montage_Play(deathMontage);
-		TArray<FName> selection;
-		selection.Add("Death1");
-		selection.Add("Death2");
-		selection.Add("Death3");
-		selection.Add("Death4");
-		int32 random = FMath::RandRange(0, selection.Num() - 1);
-		deathStatus = static_cast<EDeathStatus>(random);
-		animInstance->Montage_JumpToSection(selection[random],deathMontage);
+	PlayDeathMontage();	
+	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
 
-	}
 }
 
 bool AEnemy::IstargetInRadius(AActor* targetActor, double radius)

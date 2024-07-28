@@ -28,13 +28,19 @@ AGameCharacter::AGameCharacter()
 	hair = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Hair"));
 	hair->SetupAttachment(GetMesh());
 
+	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+	GetMesh()->SetGenerateOverlapEvents(true);
+
 }
 
 // Called when the game starts or when spawned
 void AGameCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Tags.Add(FName("EchoCharacter"));
+	Tags.Add(FName("EngageableTarget"));
 	
 }
 
@@ -43,33 +49,27 @@ void AGameCharacter::EKeyPressed()
 	AWeapon* weapon = Cast<AWeapon>(overlapingItem);
 	if (weapon) {
 
-		weapon->Equip(GetMesh(), FName("RightHandSocket"),this, this);
-		characterState = ECharacterState::ECS_Equiped;
-		equipWeapon = weapon;
-		overlapingItem = nullptr;
+		EquipWeapon(weapon);
 	}
 	else if (characterState == ECharacterState::ECS_Equiped && actionState == EActionState::EAS_Unoccupied) {
 
-		PlayEquipMontage(FName("Unequip"));
-		characterState = ECharacterState::ECS_Unequiped;
-		actionState = EActionState::EAS_Equipping;
+		UnequipWeapon();
 	}
 	else if (equipWeapon && characterState == ECharacterState::ECS_Unequiped && actionState == EActionState::EAS_Unoccupied) {
-		PlayEquipMontage(FName("Equip"));
-		characterState = ECharacterState::ECS_Equiped;
-		actionState = EActionState::EAS_Equipping;
+		EquipWeaponFromback();
 	}
 }
 
 void AGameCharacter::Attack()
 {
-	if (actionState == EActionState::EAS_Unoccupied && characterState== ECharacterState::ECS_Equiped) {
+	if (CanAttack()) {
+
 		PlayAttackMontage();
 		actionState = EActionState::EAS_Attacking;
 	}
-	
-
 }
+
+
 
 void AGameCharacter::AttackEnd()
 {
@@ -95,6 +95,17 @@ void AGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(FName("Equip"), IE_Pressed, this, &AGameCharacter::EKeyPressed);
 	PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &AGameCharacter::Attack);
+
+}
+
+void AGameCharacter::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter)
+{
+	Super::GetHit_Implementation(hitImpactPoint, hitter);
+	actionState = EActionState::EAS_HitReact;
+	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
+	DrawDebugSphere(GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
+	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction "));
+
 
 }
 
@@ -134,29 +145,7 @@ void AGameCharacter::MoveRight(float value)
 	}	
 }
 
-void AGameCharacter::PlayAttackMontage()
-{
-	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 
-	if (animInstance && attackMontage) {
-
-		animInstance->Montage_Play(attackMontage);
-		int32 sectionToPlay = FMath::RandRange(0, 1);
-		FName sectionName = FName();
-
-		switch (sectionToPlay)
-		{
-		case 0:
-			sectionName = FName("Attack1");
-			break;
-
-		default:
-			sectionName = FName("Attack2");
-			break;
-		}
-		animInstance->Montage_JumpToSection(sectionName, attackMontage);
-	}
-}
 
 void AGameCharacter::PlayEquipMontage(FName sectionName)
 {
@@ -165,6 +154,33 @@ void AGameCharacter::PlayEquipMontage(FName sectionName)
 	animInstance->Montage_Play(echoEquipMontage);
 	animInstance->Montage_JumpToSection(sectionName, echoEquipMontage);
 	
+}
+
+void AGameCharacter::EquipWeapon(AWeapon* weapon)
+{
+	weapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
+	characterState = ECharacterState::ECS_Equiped;
+	equipWeapon = weapon;
+	overlapingItem = nullptr;
+}
+
+void AGameCharacter::UnequipWeapon()
+{
+	PlayEquipMontage(FName("Unequip"));
+	characterState = ECharacterState::ECS_Unequiped;
+	actionState = EActionState::EAS_Equipping;
+}
+
+void AGameCharacter::EquipWeaponFromback()
+{
+	PlayEquipMontage(FName("Equip"));
+	characterState = ECharacterState::ECS_Equiped;
+	actionState = EActionState::EAS_Equipping;
+}
+
+bool AGameCharacter::CanAttack()
+{
+	return actionState == EActionState::EAS_Unoccupied && characterState == ECharacterState::ECS_Equiped;
 }
 
 //called from notifier and blueprint
@@ -181,6 +197,11 @@ void AGameCharacter::Unarm()
 
 //called from notifier and blueprint
 void AGameCharacter::FinishEquipping()
+{
+	actionState = EActionState::EAS_Unoccupied;
+}
+
+void AGameCharacter::HiReactEnd()
 {
 	actionState = EActionState::EAS_Unoccupied;
 }

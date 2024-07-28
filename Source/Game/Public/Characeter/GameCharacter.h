@@ -39,6 +39,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void FinishEquipping();
 
+	UFUNCTION(BlueprintCallable)
+	void HiReactEnd();
+
 	
 
 public:	
@@ -47,14 +50,19 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	/*IHitInterface*/
+	virtual void GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter);
+	/*IHitInterface*/
 private:
 	void MoveForward(float value);
 	void Turn(float value);
 	void LookUp(float value);
 	void MoveRight(float value);
-	void PlayAttackMontage();
 	void PlayEquipMontage(FName sectionName);
+	void EquipWeapon(AWeapon* weapon);
+	void UnequipWeapon();
+	void EquipWeaponFromback();
+	bool CanAttack();
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* cameraArm;

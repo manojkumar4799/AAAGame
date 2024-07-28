@@ -35,18 +35,31 @@ void AWeapon::BeginPlay()
 }
 
 //Overlaping section start
-void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	Super::OnSphereOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-		
-}
 
-void AWeapon::OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	Super::OnSphereOverlapEnd(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
-}
 
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	//if (GetOwner()->ActorHasTag(FName("Enemy")) && OtherActor->ActorHasTag(FName("Enemy"))) return;
+	FHitResult hitResult;
+	BoxTrace(hitResult);
+	ignoreActor = hitResult.GetActor();
+
+	if (hitResult.GetActor()) {
+
+		if (GetOwner()->ActorHasTag(FName("Enemy")) && hitResult.GetActor()->ActorHasTag(FName("Enemy"))) return;
+		IHitInterface* hitInterface = Cast<IHitInterface>(hitResult.GetActor());
+		UGameplayStatics::ApplyDamage(hitResult.GetActor(), damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+		if (hitInterface) {
+			hitInterface->Execute_GetHit(hitResult.GetActor(), hitResult.ImpactPoint, GetOwner());
+		}
+		
+		CreateFieldForce(hitResult.ImpactPoint);
+		
+	}
+
+}
+
+void AWeapon::BoxTrace(FHitResult& hitResult)
 {
 	const FVector startpoint = boxTraceStartPoint->GetComponentLocation();
 	const FVector endPoint = boxTraceEndPoint->GetComponentLocation();
@@ -54,7 +67,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	if (ignoreActor) {
 		ignoreList.Add(ignoreActor);
 	}
-	FHitResult hitResult;
+	
 
 	UKismetSystemLibrary::BoxTraceSingle(
 		this,
@@ -65,24 +78,14 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		ETraceTypeQuery::TraceTypeQuery1,
 		false,
 		ignoreList,
-		EDrawDebugTrace::None,
+		bShowDebugTraceBox? EDrawDebugTrace::ForDuration: EDrawDebugTrace::None,
 		hitResult,
 		true
 	);
 
-	if (hitResult.GetActor()) {
-
-		IHitInterface* hitInterface = Cast<IHitInterface>(hitResult.GetActor());
-		UGameplayStatics::ApplyDamage(hitResult.GetActor(), damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
-		if (hitInterface) {
-			hitInterface->Execute_GetHit(hitResult.GetActor(), hitResult.ImpactPoint);
-		}
-		ignoreActor = hitResult.GetActor();
-		CreateFieldForce(hitResult.ImpactPoint);
-		
-	}
-
 }
+
+
 
 
 //overlaping section end

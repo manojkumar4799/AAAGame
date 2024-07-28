@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HitInterface.h"
+#include "Characeter/CharacterTypes.h"
 #include "GameFramework/Character.h"
 #include "BaseCharacter.generated.h"
 
@@ -18,20 +19,40 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void Attack() ;
-	virtual void PlayAttackMontage();
+	/*IHitInterface*/
+	virtual void GetHit_Implementation(const FVector& hitImpactPoint , AActor* hitter) override;
+	/*IHitInterface*/
+	double DebugHitPositions(const FVector& hitImpactPoint);
 
+	/*Attack*/
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
-	virtual void OnDeath();
-	void PlayHitReactionMontage(const FName& sectionName);
-	void PlayHitReaction(double angle);
 
+
+	virtual void Attack();
 	virtual void PlayHitSound(const FVector& hitImpactPoint);
 	virtual void PlayHitVFX(const FVector& hitImpactPoint);
 
-
 	class AWeapon* equipWeapon;
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* hitSound;
+
+	UPROPERTY(EditAnywhere, Category = VFX)
+	UParticleSystem* hitVFX;
+	
+	
+
+	/*Monatage*/
+	void PlayAttackMontage();
+	void PlayDeathMontage();
+	void StopPlayingMontage(UAnimMontage* montage);
+	void PlayMontageSection(UAnimMontage* montage, const FName sectionName);	
+	
+	void PlayHitReactionMontage(const FName& sectionName);	void PlayHitReaction(double angle);
+
+	
+
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Anim Monatge")
 	UAnimMontage* attackMontage;
 
@@ -41,12 +62,19 @@ protected:
 	class UAttributeComponent* attributeComp;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* deathMontage;
-	UPROPERTY(EditAnywhere, Category = "Sound")
-	USoundBase* hitSound;
+	
 
-	UPROPERTY(EditAnywhere, Category = VFX)
-	UParticleSystem* hitVFX;
+	UPROPERTY(EditAnywhere)
+	TArray<FName> AttackMontageSections;
 
+	UPROPERTY(EditAnywhere)
+	TArray<FName> DeathMontageSections;
+
+
+	/*Health*/
+	virtual void OnDeath();
+	UPROPERTY(BlueprintReadOnly)
+	EDeathPose  deathPose = EDeathPose::EDP_DeathPose1;
 
 public:
 	ABaseCharacter();

@@ -49,7 +49,7 @@ void ABreakableActor::Tick(float DeltaTime)
 
 }
 
-void ABreakableActor::GetHit_Implementation(const FVector& hitImpactPoint)
+void ABreakableActor::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter)
 {
 	
 }

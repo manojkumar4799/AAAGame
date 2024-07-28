@@ -19,6 +19,11 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
+	/*IHitInterface*/
+	virtual void GetHit_Implementation(const FVector& hitImpactPoint , AActor* hitter) override;
+	/*IHitInterface*/
+	double DebugHitPositions(const FVector& hitImpactPoint);
+
 	/*Attack*/
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
@@ -40,7 +45,7 @@ protected:
 	/*Monatage*/
 	void PlayAttackMontage();
 	void PlayDeathMontage();
-
+	void StopPlayingMontage(UAnimMontage* montage);
 	void PlayMontageSection(UAnimMontage* montage, const FName sectionName);	
 	
 	void PlayHitReactionMontage(const FName& sectionName);	void PlayHitReaction(double angle);

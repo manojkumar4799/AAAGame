@@ -39,7 +39,7 @@ void AWeapon::BeginPlay()
 
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (GetOwner()->ActorHasTag(FName("Enemy")) && OtherActor->ActorHasTag(FName("Enemy"))) return;
+	//if (GetOwner()->ActorHasTag(FName("Enemy")) && OtherActor->ActorHasTag(FName("Enemy"))) return;
 	FHitResult hitResult;
 	BoxTrace(hitResult);
 	ignoreActor = hitResult.GetActor();
@@ -50,7 +50,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		IHitInterface* hitInterface = Cast<IHitInterface>(hitResult.GetActor());
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 		if (hitInterface) {
-			hitInterface->Execute_GetHit(hitResult.GetActor(), hitResult.ImpactPoint);
+			hitInterface->Execute_GetHit(hitResult.GetActor(), hitResult.ImpactPoint, GetOwner());
 		}
 		
 		CreateFieldForce(hitResult.ImpactPoint);

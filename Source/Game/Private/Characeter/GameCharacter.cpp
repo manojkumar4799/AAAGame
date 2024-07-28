@@ -62,7 +62,8 @@ void AGameCharacter::EKeyPressed()
 
 void AGameCharacter::Attack()
 {
-	if (actionState == EActionState::EAS_Unoccupied && characterState == ECharacterState::ECS_Equiped) {
+	if (CanAttack()) {
+
 		PlayAttackMontage();
 		actionState = EActionState::EAS_Attacking;
 	}
@@ -97,13 +98,15 @@ void AGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 }
 
-void AGameCharacter::GetHit_Implementation(const FVector& hitImpactPoint)
+void AGameCharacter::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter)
 {
+	Super::GetHit_Implementation(hitImpactPoint, hitter);
+	actionState = EActionState::EAS_HitReact;
+	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
 	DrawDebugSphere(GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
 	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction "));
 
-	PlayHitVFX(hitImpactPoint);
-	PlayHitSound(hitImpactPoint);
+
 }
 
 void AGameCharacter::MoveForward(float value)
@@ -175,6 +178,11 @@ void AGameCharacter::EquipWeaponFromback()
 	actionState = EActionState::EAS_Equipping;
 }
 
+bool AGameCharacter::CanAttack()
+{
+	return actionState == EActionState::EAS_Unoccupied && characterState == ECharacterState::ECS_Equiped;
+}
+
 //called from notifier and blueprint
 void AGameCharacter::EquipSword()
 {
@@ -189,6 +197,11 @@ void AGameCharacter::Unarm()
 
 //called from notifier and blueprint
 void AGameCharacter::FinishEquipping()
+{
+	actionState = EActionState::EAS_Unoccupied;
+}
+
+void AGameCharacter::HiReactEnd()
 {
 	actionState = EActionState::EAS_Unoccupied;
 }

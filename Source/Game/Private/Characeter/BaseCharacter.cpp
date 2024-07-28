@@ -44,6 +44,44 @@ void ABaseCharacter::Tick(float DeltaTime)
 
 }
 
+void ABaseCharacter::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter)
+{
+	PlayHitVFX(hitImpactPoint);
+	PlayHitSound(hitImpactPoint);
+	if (attributeComp->IsAlive()) PlayHitReaction(DebugHitPositions(hitter->GetActorLocation()));
+	else OnDeath();
+}
+
+double ABaseCharacter::DebugHitPositions(const FVector& hitImpactPoint)
+{
+	const FVector forwardVector = GetActorForwardVector();
+
+	const FVector LowerHitPoint(hitImpactPoint.X, hitImpactPoint.Y, GetActorLocation().Z);
+	const FVector toHitPoint = (LowerHitPoint - GetActorLocation()).GetSafeNormal();
+
+	/** ForDebugging*/
+	// forward * toHit =|forward| |toHit| CosTheta
+	double CosTheta = FVector::DotProduct(forwardVector, toHitPoint);
+	FVector crossProduct = FVector::CrossProduct(forwardVector, toHitPoint);
+	double radains = FMath::Acos(CosTheta);
+	double degrees = FMath::RadiansToDegrees(radains);
+
+	if (crossProduct.Z < 0) {
+		degrees *= -1;
+	}
+
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + crossProduct.GetSafeNormal() * 70, 7, FLinearColor::Green, 5, 2);
+	if (GEngine) {
+		GEngine->AddOnScreenDebugMessage(1, 5, FColor::Black, FString::Printf(TEXT("Degrees: %f"), degrees));
+	}
+
+
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 70, 7, FLinearColor::Yellow, 5, 2);
+	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHitPoint * 70, 7, FLinearColor::Red, 5, 2);
+	return degrees;
+}
+
+
 void ABaseCharacter::Attack()
 {
 }
@@ -63,6 +101,14 @@ void ABaseCharacter::PlayDeathMontage()
 		TEnumAsByte<EDeathPose> Pose(randomSelectionIndex);
 		deathPose = Pose;
 		PlayMontageSection(deathMontage, DeathMontageSections[randomSelectionIndex]);
+	}
+}
+
+void ABaseCharacter::StopPlayingMontage(UAnimMontage* montage)
+{
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (animInstance) {
+		animInstance->Montage_Stop(0.15f, montage);
 	}
 }
 

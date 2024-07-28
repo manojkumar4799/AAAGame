@@ -38,7 +38,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float attackRadius = 150;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	AActor* combatTarget = nullptr;
 
 	
@@ -55,7 +55,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float acceptanceRadius= 30.f;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	EEnemyState currentEnemyState = EEnemyState::EES_Patrolling;
 	/*AI*/
 
@@ -71,7 +71,7 @@ public:
 
 	
 	/*IHitInterface*/
-	virtual void GetHit_Implementation(const FVector& hitImpactPoint);
+	virtual void GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter);
 	/*IHitInterface*/
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
@@ -97,13 +97,13 @@ private:
 	bool IsAttacking();
 	void StartAttackTimer();
 	void ClearTimer(FTimerHandle timer);
-	bool IsDead();	
-	void DebugHitPositions(const FVector& hitImpactPoint);
+	bool IsDead();		
 	bool IstargetInRadius(AActor* targetActor, double radius);
 	void MoveToTarget(AActor* target);
 	void PatrolCheck();
 	void CombatCheck();
 	void PatrolTimerFinished();	
+	
 
 	UPROPERTY(VisibleAnywhere)
 	class UPawnSensingComponent* pawnSense;

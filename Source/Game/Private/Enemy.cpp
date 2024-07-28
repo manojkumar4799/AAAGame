@@ -4,7 +4,6 @@
 #include "Enemy.h"
 #include "Components/CapsuleComponent.h"
 #include "DrawDebugHelpers.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Components/WidgetComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -166,51 +165,20 @@ void AEnemy::PatrolTimerFinished()
 }
 
 
-void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint)
+
+void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter)
 {
-	HandleHealthBar(true);
+    Super::GetHit_Implementation(hitImpactPoint, hitter);
+	if(attributeComp->IsAlive())HandleHealthBar(true);
+	ClearTimer(patrolTimer);
+	ClearTimer(AttackTimer);
+	StopPlayingMontage(attackMontage);
+	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
 	DrawDebugSphere( GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
-	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction "));
+	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction, enemy "));
 	
-	PlayHitVFX(hitImpactPoint);
-	PlayHitSound(hitImpactPoint);
-	DebugHitPositions(hitImpactPoint);
 }
 
-void AEnemy::DebugHitPositions(const FVector& hitImpactPoint)
-{
-	
-	
-	const FVector forwardVector = GetActorForwardVector();
-
-	const FVector LowerHitPoint(hitImpactPoint.X, hitImpactPoint.Y, GetActorLocation().Z);
-	const FVector toHitPoint = (LowerHitPoint - GetActorLocation()).GetSafeNormal();
-
-	/** ForDebugging*/
-	// forward * toHit =|forward| |toHit| CosTheta
-	double CosTheta = FVector::DotProduct(forwardVector, toHitPoint);
-	FVector crossProduct = FVector::CrossProduct(forwardVector, toHitPoint);
-	double radains = FMath::Acos(CosTheta);
-	double degrees = FMath::RadiansToDegrees(radains);
-
-	if (crossProduct.Z < 0) {
-		degrees *= -1;
-	}
-
-	if (attributeComp->IsAlive()) PlayHitReaction(degrees);
-	else OnDeath();
-
-	
-
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + crossProduct.GetSafeNormal() * 70, 7, FLinearColor::Green, 5, 2);
-	if (GEngine) {
-		GEngine->AddOnScreenDebugMessage(1, 5, FColor::Black, FString::Printf(TEXT("Degrees: %f"), degrees));
-	}
-
-
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 70, 7, FLinearColor::Yellow, 5, 2);
-	UKismetSystemLibrary::DrawDebugArrow(this, GetActorLocation(), GetActorLocation() + toHitPoint * 70, 7, FLinearColor::Red, 5, 2);
-}
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -220,9 +188,9 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		attributeComp->Receivedamage(DamageAmount);
 		HealthComponet->SetHealthPercent(attributeComp->GetHealthPercent());
 		combatTarget = EventInstigator->GetPawn();
-		currentEnemyState = EEnemyState::EES_Chasing;
-		GetCharacterMovement()->MaxWalkSpeed = 300.f;
-		MoveToTarget(combatTarget);
+		if (IsInsideAttackRadius()) {
+			currentEnemyState = EEnemyState::EES_Attacking;
+		}else StartChasing();
 	}
 	
 	return DamageAmount;
@@ -281,6 +249,10 @@ bool AEnemy::IsOutofChaseRadius()
 
 void AEnemy::StartChasing()
 {
+
+	if (currentEnemyState == EEnemyState::EES_Engaged) {
+		return;// this wil make sure enemy wont chase while attacking and no foot sliding
+	}
 	currentEnemyState = EEnemyState::EES_Chasing;
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	MoveToTarget(combatTarget);
@@ -331,6 +303,7 @@ void AEnemy::OnDeath()
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 	if (HealthComponet) HealthComponet->SetVisibility(false);
 	PlayDeathMontage();	
+	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
 
 }
 

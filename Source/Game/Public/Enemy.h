@@ -28,7 +28,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AWeapon> weaponClass;
 	/*Attack*/
-	
+	/*MotionWarping*/
+	UFUNCTION(BlueprintCallable)
+	FVector GetTranslationWarpTarget();
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetRotationWarpTarget();
+	/*MotionWarping*/
 
 	/*AI*/
 	
@@ -109,6 +115,10 @@ private:
 	class UPawnSensingComponent* pawnSense;
 	/*AI*/
 
+	
+
+	UPROPERTY(EditAnywhere)
+	double distanceFromTarget = 75.f;
 
 	/*Timers*/
 	FTimerHandle AttackTimer;

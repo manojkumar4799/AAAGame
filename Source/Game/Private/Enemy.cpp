@@ -164,6 +164,26 @@ void AEnemy::PatrolTimerFinished()
 	MoveToTarget(patrolTarget);
 }
 
+FVector AEnemy::GetTranslationWarpTarget()
+{
+	if (combatTarget) {
+
+		FVector distanceVectorFromCombat = (GetActorLocation() - combatTarget->GetActorLocation()).GetSafeNormal();
+		distanceVectorFromCombat *= distanceFromTarget;
+		return combatTarget->GetActorLocation() + distanceVectorFromCombat;
+
+	}
+	return FVector();
+}
+
+FVector AEnemy::GetRotationWarpTarget()
+{
+	if (combatTarget) {
+		return combatTarget->GetActorLocation();
+	}
+	return FVector();
+}
+
 
 
 void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter)

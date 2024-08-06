@@ -72,6 +72,7 @@ protected:
 
 
 	/*Health*/
+	void HandleDamage(float DamageAmount);
 	virtual void OnDeath();
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose  deathPose = EDeathPose::EDP_DeathPose1;

@@ -204,8 +204,8 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 {
 	if (currentEnemyState == EEnemyState::EES_Dead)  return DamageAmount;
 
-	if (attributeComp && HealthComponet && currentEnemyState!=EEnemyState::EES_Dead ) {
-		attributeComp->Receivedamage(DamageAmount);
+	if ( HealthComponet && currentEnemyState!=EEnemyState::EES_Dead ) {
+		HandleDamage(DamageAmount);
 		HealthComponet->SetHealthPercent(attributeComp->GetHealthPercent());
 		combatTarget = EventInstigator->GetPawn();
 		if (IsInsideAttackRadius()) {

@@ -22,6 +22,8 @@ class GAME_API AGameCharacter : public ABaseCharacter
 public:
 	// Sets default values for this character's properties
 	AGameCharacter();
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -29,6 +31,8 @@ protected:
 	void EKeyPressed();
 	void Attack() override;
 	void AttackEnd() override;
+
+	
 
 	UFUNCTION(BlueprintCallable)
 	void EquipSword();

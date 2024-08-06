@@ -7,9 +7,6 @@
 #include "Components/BoxComponent.h"
 #include "weapons/Weapon.h"
 
-
-
-// Sets default values
 AGameCharacter::AGameCharacter()
 {
 
@@ -34,6 +31,12 @@ AGameCharacter::AGameCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
 	GetMesh()->SetGenerateOverlapEvents(true);
 
+}
+
+float AGameCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	HandleDamage(DamageAmount);
+	return DamageAmount;
 }
 
 // Called when the game starts or when spawned
@@ -75,6 +78,8 @@ void AGameCharacter::AttackEnd()
 {
 	actionState = EActionState::EAS_Unoccupied;
 }
+
+
 
 // Called every frame
 void AGameCharacter::Tick(float DeltaTime)

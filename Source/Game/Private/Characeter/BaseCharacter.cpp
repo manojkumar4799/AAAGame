@@ -128,6 +128,13 @@ void ABaseCharacter::AttackEnd()
 
 }
 
+void ABaseCharacter::HandleDamage(float DamageAmount)
+{
+	if (attributeComp) {
+		attributeComp->Receivedamage(DamageAmount);
+	}
+}
+
 void ABaseCharacter::OnDeath()
 {
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);

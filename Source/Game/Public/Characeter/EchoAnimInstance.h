@@ -35,6 +35,12 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	ECharacterState characterState;
 
+	UPROPERTY(BlueprintReadOnly)
+	EDeathPose deathPose;
+
+	UPROPERTY(BlueprintReadWrite)
+
+	EActionState echoActionState;
 	
 
 	

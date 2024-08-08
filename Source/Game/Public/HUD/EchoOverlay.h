@@ -16,9 +16,11 @@ class GAME_API UEchoOverlay : public UUserWidget
 
 public:
 
-	void SetProgressBar(class UProgressBar* progressBar, float percent);
+	void SetHealthBar( float percent);
+	void SetStaminaBar(float percent);
 
-	void SetResourcesCount(class UTextBlock* textBlock, int32 count);
+	void SetGoldCount(int32 count);
+	void SetSoulCount(int32 count);
 
 private:
 	UPROPERTY(meta=(BindWidget))

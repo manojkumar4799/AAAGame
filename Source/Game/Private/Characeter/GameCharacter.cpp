@@ -6,6 +6,9 @@
 #include "Characeter/GameCharacter.h"
 #include "Components/BoxComponent.h"
 #include "weapons/Weapon.h"
+#include "HUD/EchoHUD.h"
+#include "HUD/EchoOverlay.h"
+#include "Attributes/AttributeComponent.h"
 
 AGameCharacter::AGameCharacter()
 {
@@ -36,6 +39,10 @@ AGameCharacter::AGameCharacter()
 float AGameCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
+	if (echoOVerlay && attributeComp) {
+		echoOVerlay->SetHealthBar(attributeComp->GetHealthPercent());
+	}
+	
 	return DamageAmount;
 }
 
@@ -44,7 +51,27 @@ void AGameCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Tags.Add(FName("EngageableTarget"));
+
+	SetEchoOverlay();
+
 	
+}
+
+void AGameCharacter::SetEchoOverlay()
+{
+	APlayerController* playerController = Cast<APlayerController>(GetController());
+	if (playerController) {
+
+		AEchoHUD* echoHUD = Cast<AEchoHUD>(playerController->GetHUD());
+		if (echoHUD) {
+			echoOVerlay = echoHUD->GetEchoOverlay();
+
+			echoOVerlay->SetHealthBar(attributeComp->GetHealthPercent());
+			echoOVerlay->SetStaminaBar(0.7f);
+			echoOVerlay->SetGoldCount(15.f);
+			echoOVerlay->SetSoulCount(12.f);
+		}
+	}
 }
 
 void AGameCharacter::EKeyPressed()
@@ -106,8 +133,8 @@ void AGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AGameCharacter::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter)
 {
 	Super::GetHit_Implementation(hitImpactPoint, hitter);
-	actionState = EActionState::EAS_HitReact;
-	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
+	if(attributeComp->IsAlive()) actionState = EActionState::EAS_HitReact;
+	if( equipWeapon)HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
 	DrawDebugSphere(GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
 	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction "));
 
@@ -209,5 +236,12 @@ void AGameCharacter::FinishEquipping()
 void AGameCharacter::HiReactEnd()
 {
 	actionState = EActionState::EAS_Unoccupied;
+}
+
+void AGameCharacter::OnDeath()
+{
+	Super::OnDeath();
+	PlayDeathMontage();
+	actionState = EActionState::EAS_Dead;
 }
 

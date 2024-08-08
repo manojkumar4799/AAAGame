@@ -193,7 +193,7 @@ void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter
 	ClearTimer(patrolTimer);
 	ClearTimer(AttackTimer);
 	StopPlayingMontage(attackMontage);
-	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
+	if(equipWeapon)	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
 	DrawDebugSphere( GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
 	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction, enemy "));
 	
@@ -235,6 +235,7 @@ void AEnemy::OnPawnSeen(APawn* seenPawn)
 void AEnemy::Attack()
 {
 	Super::Attack();
+	
 	currentEnemyState = EEnemyState::EES_Engaged;
 	PlayAttackMontage();	
 	
@@ -300,6 +301,14 @@ bool AEnemy::IsAttacking()
 
 void AEnemy::StartAttackTimer()
 {
+	
+	if (combatTarget && combatTarget->ActorHasTag("Dead"))
+	{
+		combatTarget = nullptr;
+		ClearTimer(AttackTimer);
+		StartPatrol();
+		return;
+	}
 	currentEnemyState = EEnemyState::EES_Attacking;
 	GetWorldTimerManager().SetTimer(AttackTimer,this, &AEnemy::Attack, FMath::RandRange(1.f, 1.5f));
 }

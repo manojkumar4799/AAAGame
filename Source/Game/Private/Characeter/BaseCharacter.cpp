@@ -23,10 +23,15 @@ ABaseCharacter::ABaseCharacter()
 //handle the weapon collision while attacking
 void ABaseCharacter::HandleCollisionForWeaponBoxCollider(ECollisionEnabled::Type Collisiontype)
 {
-	equipWeapon->GetBoxCollider()->SetCollisionEnabled(Collisiontype);
-	if (Collisiontype == ECollisionEnabled::QueryOnly) {
-		equipWeapon->ignoreActor = nullptr;
+	if (equipWeapon->GetBoxCollider()) 
+	{
+		equipWeapon->GetBoxCollider()->SetCollisionEnabled(Collisiontype);
+		if (Collisiontype == ECollisionEnabled::QueryOnly) {
+			equipWeapon->ignoreActor = nullptr;
+		}
+		
 	}
+	
 
 }
 
@@ -84,6 +89,7 @@ double ABaseCharacter::DebugHitPositions(const FVector& hitImpactPoint)
 
 void ABaseCharacter::Attack()
 {
+	
 }
 
 void ABaseCharacter::PlayAttackMontage()
@@ -101,7 +107,7 @@ void ABaseCharacter::PlayDeathMontage()
 		TEnumAsByte<EDeathPose> Pose(randomSelectionIndex);
 		deathPose = Pose;
 		PlayMontageSection(deathMontage, DeathMontageSections[randomSelectionIndex]);
-	}
+	} 
 }
 
 void ABaseCharacter::StopPlayingMontage(UAnimMontage* montage)
@@ -137,6 +143,8 @@ void ABaseCharacter::HandleDamage(float DamageAmount)
 
 void ABaseCharacter::OnDeath()
 {
+	Tags.Empty();
+	Tags.Add(FName("Dead"));
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 

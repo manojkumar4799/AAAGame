@@ -9,7 +9,6 @@
 #include "BaseCharacter.generated.h"
 
 
-
 UCLASS()
 class GAME_API ABaseCharacter : public ACharacter, public IHitInterface
 {
@@ -82,5 +81,5 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void HandleCollisionForWeaponBoxCollider(ECollisionEnabled::Type Collisiontype);
-
+	FORCEINLINE TEnumAsByte<EDeathPose> GetDeathPose() { return deathPose; }
 };

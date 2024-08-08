@@ -2,4 +2,12 @@
 
 
 #include "HUD/EchoHUD.h"
+#include "HUD/EchoOverlay.h"
+
+void AEchoHUD::BeginPlay()
+{
+	Super::BeginPlay();
+	echoOverlay= CreateWidget<UEchoOverlay>(GetWorld()->GetFirstPlayerController(), echoOverlayClass);
+	echoOverlay->AddToViewport();
+}
 

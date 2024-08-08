@@ -5,18 +5,30 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
-void UEchoOverlay::SetProgressBar(UProgressBar* progressBar, float percent)
+void UEchoOverlay::SetHealthBar(float percent)
 {
-	if (progressBar) {
-
-		progressBar->SetPercent(percent);
+	if (HealthProgressBar) {
+		HealthProgressBar->SetPercent(percent);
 	}
 }
 
-void UEchoOverlay::SetResourcesCount(UTextBlock* textBlock, int32 count)
+void UEchoOverlay::SetStaminaBar(float percent)
 {
-	if (textBlock)
-	{
-		textBlock->SetText(FText::FromString(FString::Printf(TEXT("% d"), count)));
+	if (StaminaProgressBar) {
+		StaminaProgressBar->SetPercent(percent);
+	}
+}
+
+void UEchoOverlay::SetGoldCount(int32 count)
+{
+	if (GoldText) {
+		GoldText->SetText(FText::FromString(FString::Printf(TEXT("%d"), count)));
+	}
+}
+
+void UEchoOverlay::SetSoulCount(int32 count)
+{
+	if (SoulText) {
+		SoulText->SetText(FText::FromString(FString::Printf(TEXT("%d"), count)));
 	}
 }

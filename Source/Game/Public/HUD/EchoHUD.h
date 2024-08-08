@@ -14,8 +14,20 @@ class GAME_API AEchoHUD : public AHUD
 {
 	GENERATED_BODY()
 
+protected:
+
+	virtual void BeginPlay() override;
+
 
 private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UEchoOverlay> echoOverlayClass;
 
+	UPROPERTY()
+	class UEchoOverlay* echoOverlay;
+
+public:
+
+	FORCEINLINE class UEchoOverlay* GetEchoOverlay() { return echoOverlay; }
 	
 };

@@ -28,6 +28,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
 	void EKeyPressed();
 	void Attack() override;
 	void AttackEnd() override;
@@ -46,7 +47,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void HiReactEnd();
 
-	
+	virtual void OnDeath() override;
 
 public:	
 	// Called every frame
@@ -67,6 +68,9 @@ private:
 	void UnequipWeapon();
 	void EquipWeaponFromback();
 	bool CanAttack();
+
+	UPROPERTY()
+	class UEchoOverlay* echoOVerlay;
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* cameraArm;
@@ -94,12 +98,13 @@ private:
 	EActionState actionState = EActionState::EAS_Unoccupied;
 
 
-	
+	void SetEchoOverlay();
 
 public:
 	FORCEINLINE  void SetOverlapingItem(AActorItem* item) { overlapingItem = item; }
 
 	FORCEINLINE ECharacterState GetCharacterState() { return characterState; }
 	
-
+	FORCEINLINE EActionState GetEchoACtionState() { return actionState; }
+	
 };

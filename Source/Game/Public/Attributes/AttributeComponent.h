@@ -32,10 +32,25 @@ private:
 	UPROPERTY(EditAnywhere)
 	float maxHealth;
 
+	UPROPERTY(EditAnywhere)
+	int32 soulCount;
+
+	UPROPERTY(EditAnywhere)
+	int32 goldCount;
+
 public:
 
 	void Receivedamage(float damage);
+	UFUNCTION(BlueprintCallable)
 	float GetHealthPercent();
+
+	FORCEINLINE int32 GetGoldCount() { return goldCount; }
+
+	FORCEINLINE int32 GetSoulCount() { return soulCount; }
+
+	void AddGold(int32 count);
+
+	void AddSoul(int32 count);
 	
 	bool IsAlive();
 

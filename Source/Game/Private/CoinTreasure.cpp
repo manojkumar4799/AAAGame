@@ -4,6 +4,7 @@
 #include "CoinTreasure.h"
 #include "Characeter/GameCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "PickupInterface.h"
 
 // Sets default values
 ACoinTreasure::ACoinTreasure()
@@ -22,9 +23,10 @@ void ACoinTreasure::BeginPlay()
 
 void ACoinTreasure::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	AGameCharacter* echoChar = Cast<AGameCharacter>(OtherActor);
-	if(echoChar) {
-		UGameplayStatics::PlaySoundAtLocation(this, pickupSound, GetActorLocation());
+	IPickupInterface* pickupActor = Cast<IPickupInterface>(OtherActor);
+	if(pickupActor) {
+		pickupActor->AddGold(this);
+		PlayPickupSound();
 		Destroy();
 	}
 }

@@ -18,6 +18,7 @@ UAttributeComponent::UAttributeComponent()
 void UAttributeComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	
 
 	// ...
 	
@@ -40,6 +41,16 @@ void UAttributeComponent::Receivedamage(float damage)
 float UAttributeComponent::GetHealthPercent()
 {
 	return health/maxHealth;
+}
+
+void UAttributeComponent::AddGold(int32 count)
+{
+	goldCount += count;
+}
+
+void UAttributeComponent::AddSoul(int32 count)
+{
+	soulCount += count;
 }
 
 bool UAttributeComponent::IsAlive()

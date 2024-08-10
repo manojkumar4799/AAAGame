@@ -20,7 +20,7 @@ public:
 protected:
 	virtual void BeginPlay() override;	
 
-	
+	void SpawnSoul();
 	/*Attack*/
 	void AttackEnd();
 	
@@ -31,6 +31,8 @@ protected:
 	/*MotionWarping*/
 	UFUNCTION(BlueprintCallable)
 	FVector GetTranslationWarpTarget();
+
+	
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetRotationWarpTarget();
@@ -88,6 +90,8 @@ private:
 
 	void OnDeath() override;
 
+	
+
 
 	/*AI*/
 	UFUNCTION()
@@ -115,6 +119,8 @@ private:
 	class UPawnSensingComponent* pawnSense;
 	/*AI*/
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ASoul> soulClass;
 	
 
 	UPROPERTY(EditAnywhere)
@@ -123,6 +129,7 @@ private:
 	/*Timers*/
 	FTimerHandle AttackTimer;
 	FTimerHandle patrolTimer;
+	FTimerHandle SpawnTimer;
 	/*Timers*/
 
 	/*Health*/

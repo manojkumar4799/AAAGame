@@ -5,7 +5,9 @@
 #include "Characeter/BaseCharacter.h"
 #include "CoreMinimal.h"
 #include "Characeter/CharacterTypes.h"
+#include "PickupInterface.h"
 #include "GameCharacter.generated.h"
+
 
 
 class USpringArmComponent;
@@ -15,7 +17,7 @@ class AActorItem;
 
 
 UCLASS()
-class GAME_API AGameCharacter : public ABaseCharacter
+class GAME_API AGameCharacter : public ABaseCharacter, public IPickupInterface
 {
 	GENERATED_BODY()
 
@@ -24,6 +26,9 @@ public:
 	AGameCharacter();
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	virtual void SetOverlappingItem(class AActorItem* item) override;
+	virtual void AddSoul(class ASoul* soul) override;
+	virtual void AddGold(class ACoinTreasure* treasure) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -101,7 +106,6 @@ private:
 	void SetEchoOverlay();
 
 public:
-	FORCEINLINE  void SetOverlapingItem(AActorItem* item) { overlapingItem = item; }
 
 	FORCEINLINE ECharacterState GetCharacterState() { return characterState; }
 	

@@ -9,6 +9,9 @@
 #include "HUD/EchoHUD.h"
 #include "HUD/EchoOverlay.h"
 #include "Attributes/AttributeComponent.h"
+#include "Soul.h"
+#include "CoinTreasure.h"
+
 
 AGameCharacter::AGameCharacter()
 {
@@ -46,6 +49,29 @@ float AGameCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	return DamageAmount;
 }
 
+void AGameCharacter::SetOverlappingItem(AActorItem* item)
+{
+	overlapingItem = item;
+}
+
+void AGameCharacter::AddSoul(ASoul* soul)
+{
+	if (attributeComp && echoOVerlay)
+	{
+		attributeComp->AddSoul(soul->GetSoulValue());
+		echoOVerlay->SetSoulCount(attributeComp->GetSoulCount());
+	}
+}
+
+void AGameCharacter::AddGold(ACoinTreasure* treasure)
+{
+	if (attributeComp && echoOVerlay)
+	{
+		attributeComp->AddGold(treasure->GetGoldValue());
+		echoOVerlay->SetGoldCount(attributeComp->GetGoldCount());
+	}
+}
+
 // Called when the game starts or when spawned
 void AGameCharacter::BeginPlay()
 {
@@ -68,8 +94,8 @@ void AGameCharacter::SetEchoOverlay()
 
 			echoOVerlay->SetHealthBar(attributeComp->GetHealthPercent());
 			echoOVerlay->SetStaminaBar(0.7f);
-			echoOVerlay->SetGoldCount(15.f);
-			echoOVerlay->SetSoulCount(12.f);
+			echoOVerlay->SetGoldCount(attributeComp->GetGoldCount());
+			echoOVerlay->SetSoulCount(attributeComp->GetSoulCount());
 		}
 	}
 }

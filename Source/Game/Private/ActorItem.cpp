@@ -3,8 +3,10 @@
 #include "Components/SphereComponent.h"
 #include "DrawDebugHelpers.h"
 #include "ActorItem.h"
-#include "Characeter/GameCharacter.h"
+#include "PickupInterface.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 
 
@@ -76,10 +78,10 @@ void AActorItem::Tick(float DeltaTime)
 
 void AActorItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	AGameCharacter* echoCharacter = Cast<AGameCharacter>(OtherActor);
-	if (echoCharacter) {
+	IPickupInterface* pickupInterface = Cast<IPickupInterface>(OtherActor);
+	if (pickupInterface) {
 
-		echoCharacter->SetOverlapingItem(this);
+		pickupInterface->SetOverlappingItem(this);
 
 	}
 
@@ -87,12 +89,24 @@ void AActorItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 
 void AActorItem::OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	AGameCharacter* echoCharacter = Cast<AGameCharacter>(OtherActor);
-	if (echoCharacter) {
+	IPickupInterface* pickupInterface = Cast<IPickupInterface>(OtherActor);
+	if (pickupInterface) {
 
-		echoCharacter->SetOverlapingItem(nullptr);
+		pickupInterface->SetOverlappingItem(nullptr);
 
 	}
 
+}
+
+void AActorItem::SpawnPickupVFX()
+{
+	if (pickupVFX) {
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, pickupVFX, GetActorLocation());
+	}
+}
+
+void AActorItem::PlayPickupSound()
+{
+	UGameplayStatics::PlaySoundAtLocation(this, pickupSound, GetActorLocation());
 }
 

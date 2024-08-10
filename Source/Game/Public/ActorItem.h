@@ -40,6 +40,9 @@ protected:
 	UFUNCTION()
 	virtual void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	virtual void SpawnPickupVFX();
+	virtual void PlayPickupSound();
+
 	EItemState itemState = EItemState::EIS_Hovering;
 
 	UPROPERTY(VisibleAnywhere)
@@ -47,11 +50,15 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraComponent* spawnVFX;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* pickupVFX;
+
+	UPROPERTY(EditDefaultsOnly)
+	USoundBase* pickupSound;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	
 
 	
 

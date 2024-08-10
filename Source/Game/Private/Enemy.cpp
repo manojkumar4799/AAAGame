@@ -11,6 +11,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "weapons/Weapon.h"
 #include "Attributes/AttributeComponent.h"
+#include "Soul.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -334,6 +335,22 @@ void AEnemy::OnDeath()
 	PlayDeathMontage();	
 	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
 
+	GetWorldTimerManager().SetTimer(SpawnTimer, this, &AEnemy::SpawnSoul, FMath::RandRange(1.f, 1.25f));
+
+}
+
+void AEnemy::SpawnSoul()
+{
+	if (soulClass)
+	{
+		UWorld* world = GetWorld();
+		ASoul* soul = (world->SpawnActor<ASoul>(soulClass, GetActorLocation(), GetActorRotation()));
+		if (attributeComp) {
+			soul->SetSoulValue(attributeComp->GetSoulCount());
+		}
+		ClearTimer(SpawnTimer);
+		
+	}
 }
 
 bool AEnemy::IstargetInRadius(AActor* targetActor, double radius)

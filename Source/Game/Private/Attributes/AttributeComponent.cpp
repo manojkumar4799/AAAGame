@@ -43,6 +43,20 @@ float UAttributeComponent::GetHealthPercent()
 	return health/maxHealth;
 }
 
+void UAttributeComponent::RegenStamina(float deltaTime)
+{
+	stamina = FMath::Clamp(stamina + staminaIncreaseRate * deltaTime, 0.f, maxStamina);
+}
+
+void UAttributeComponent::UseStamina()
+{
+	stamina = FMath::Clamp(stamina - staminaCost, 0.f, maxStamina);
+}
+
+void UAttributeComponent::IncreaseStamina()
+{
+}
+
 void UAttributeComponent::AddGold(int32 count)
 {
 	goldCount += count;

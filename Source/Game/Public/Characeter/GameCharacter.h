@@ -73,6 +73,15 @@ private:
 	void UnequipWeapon();
 	void EquipWeaponFromback();
 	bool CanAttack();
+	
+	void Dodge();
+
+	bool IsUnoccupied();
+
+	bool HasEnoughStamina();
+
+	UFUNCTION(BlueprintCallable)
+	void DodgeEnd();
 
 	UPROPERTY()
 	class UEchoOverlay* echoOVerlay;
@@ -88,6 +97,9 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly)
 	AActorItem* overlapingItem;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* dodgeMontage;
 
 	
 

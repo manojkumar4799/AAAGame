@@ -138,6 +138,11 @@ void AGameCharacter::AttackEnd()
 void AGameCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (attributeComp)
+	{
+		attributeComp->RegenStamina(DeltaTime);
+		echoOVerlay->SetStaminaBar(attributeComp->GetStaminaPercent());
+	}
 
 }
 
@@ -153,6 +158,7 @@ void AGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(FName("Equip"), IE_Pressed, this, &AGameCharacter::EKeyPressed);
 	PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &AGameCharacter::Attack);
+	PlayerInputComponent->BindAction(FName("Dodge"), IE_Pressed, this, &AGameCharacter::Dodge);
 
 }
 
@@ -240,6 +246,47 @@ bool AGameCharacter::CanAttack()
 {
 	return actionState == EActionState::EAS_Unoccupied && characterState == ECharacterState::ECS_Equiped;
 }
+
+void AGameCharacter::Dodge()
+{
+	if (!IsUnoccupied() ) {
+         return;
+		
+	}
+
+	if (!HasEnoughStamina()) {
+		return;
+	}
+
+	
+
+	PlayMontageSection(dodgeMontage, FName("Default"));
+	actionState = EActionState::EAS_Dodge;
+	if (attributeComp && echoOVerlay)
+	{
+		attributeComp->UseStamina();
+		echoOVerlay->SetStaminaBar(attributeComp->GetStaminaPercent());
+	}
+	
+}
+
+bool AGameCharacter::IsUnoccupied()
+{
+	return actionState == EActionState::EAS_Unoccupied;
+}
+
+bool AGameCharacter::HasEnoughStamina()
+{
+	
+	return attributeComp->GetStamina() > attributeComp->GetStaminaCost();
+}
+
+void AGameCharacter::DodgeEnd()
+{
+	actionState = EActionState::EAS_Unoccupied;
+}
+
+
 
 //called from notifier and blueprint
 void AGameCharacter::EquipSword()

@@ -13,6 +13,7 @@ enum class EActionState :uint8 {
 	EAS_HitReact UMETA(DisplayName = "HitReact"),
 	EAS_Attacking UMETA(DisplayName = "Attacking"),
 	EAS_Equipping UMETA(DisplayName = "Equipping"),
+	EAS_Dodge UMETA(DisplayName="Dodge"),
 	EAS_Dead UMETA(DisplayName="Dead")
 };
 

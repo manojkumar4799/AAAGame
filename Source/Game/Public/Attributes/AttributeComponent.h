@@ -30,6 +30,18 @@ private:
 	float health;
 
 	UPROPERTY(EditAnywhere)
+	float stamina;
+
+	UPROPERTY(EditAnywhere)
+	float maxStamina;
+
+	UPROPERTY(EditAnywhere)
+	float staminaCost;
+
+	UPROPERTY(EDitAnywhere)
+	float staminaIncreaseRate;
+
+	UPROPERTY(EditAnywhere)
 	float maxHealth;
 
 	UPROPERTY(EditAnywhere)
@@ -43,10 +55,21 @@ public:
 	void Receivedamage(float damage);
 	UFUNCTION(BlueprintCallable)
 	float GetHealthPercent();
+	
+	void RegenStamina(float deltaTime);
+
+	void UseStamina();
+
+	FORCEINLINE float GetStaminaPercent() { return stamina/maxStamina; }
+	FORCEINLINE float GetStamina() { return stamina; };
+	FORCEINLINE float GetStaminaCost() { return staminaCost; }
+
 
 	FORCEINLINE int32 GetGoldCount() { return goldCount; }
 
 	FORCEINLINE int32 GetSoulCount() { return soulCount; }
+
+	void IncreaseStamina();
 
 	void AddGold(int32 count);
 

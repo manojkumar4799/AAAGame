@@ -52,7 +52,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void HiReactEnd();
 
-	virtual void OnDeath() override;
+	virtual void OnDeath_Implementation() override;
 
 public:	
 	// Called every frame

@@ -90,7 +90,7 @@ public:
 private:
 	
 
-	void OnDeath() override;
+	void OnDeath_Implementation() override;
 
 	
 

@@ -311,9 +311,9 @@ void AGameCharacter::HiReactEnd()
 	actionState = EActionState::EAS_Unoccupied;
 }
 
-void AGameCharacter::OnDeath()
+void AGameCharacter::OnDeath_Implementation()
 {
-	Super::OnDeath();
+	Super::OnDeath_Implementation();
 	PlayDeathMontage();
 	actionState = EActionState::EAS_Dead;
 }

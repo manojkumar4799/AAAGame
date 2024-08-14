@@ -330,9 +330,9 @@ bool AEnemy::IsDead()
 }
 
 
-void AEnemy::OnDeath()
+void AEnemy::OnDeath_Implementation()
 {
-	Super::OnDeath();
+	Super::OnDeath_Implementation();
 	currentEnemyState = EEnemyState::EES_Dead;
 	ClearTimer(AttackTimer);
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();

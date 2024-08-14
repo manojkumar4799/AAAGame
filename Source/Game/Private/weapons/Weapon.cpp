@@ -44,9 +44,14 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	BoxTrace(hitResult);
 	ignoreActor = hitResult.GetActor();
 
-	if (hitResult.GetActor()) {
+	if (ignoreActor) {
 
-		if (GetOwner()->ActorHasTag(FName("Enemy")) && hitResult.GetActor()->ActorHasTag(FName("Enemy"))) return;
+		FName ownerTag = GetOwner()->Tags[0];
+		FName hitResultActorTag = hitResult.GetActor()->Tags[0];
+		if (GetOwner()->ActorHasTag(FName("Enemy")) && hitResult.GetActor()->ActorHasTag(FName("Enemy"))) {
+			return;
+		}
+
 		IHitInterface* hitInterface = Cast<IHitInterface>(hitResult.GetActor());
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 		if (hitInterface) {
@@ -64,6 +69,8 @@ void AWeapon::BoxTrace(FHitResult& hitResult)
 	const FVector startpoint = boxTraceStartPoint->GetComponentLocation();
 	const FVector endPoint = boxTraceEndPoint->GetComponentLocation();
 	TArray<AActor*> ignoreList;
+	ignoreList.Add(this);
+	ignoreList.Add(GetOwner());
 	if (ignoreActor) {
 		ignoreList.Add(ignoreActor);
 	}
@@ -73,7 +80,7 @@ void AWeapon::BoxTrace(FHitResult& hitResult)
 		this,
 		startpoint,
 		endPoint,
-		FVector(2.f, 2.f, 2.f),
+		boxTraceExtent,
 		boxTraceStartPoint->GetComponentRotation(),
 		ETraceTypeQuery::TraceTypeQuery1,
 		false,

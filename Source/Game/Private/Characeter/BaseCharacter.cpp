@@ -141,7 +141,7 @@ void ABaseCharacter::HandleDamage(float DamageAmount)
 	}
 }
 
-void ABaseCharacter::OnDeath()
+void ABaseCharacter::OnDeath_Implementation()
 {
 	Tags.Empty();
 	Tags.Add(FName("Dead"));

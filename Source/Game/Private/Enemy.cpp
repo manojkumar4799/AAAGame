@@ -57,7 +57,7 @@ void AEnemy::BeginPlay()
 
 	if (weaponClass) {
 		equipWeapon = GetWorld()->SpawnActor<AWeapon>(weaponClass);
-		equipWeapon->Equip(GetMesh(), FName("WeaponRightHandSocket"), this, this);
+		equipWeapon->Equip(GetMesh(), FName("WeaponSocket"), this, this);
 		
 	}
 }
@@ -197,6 +197,10 @@ void AEnemy::GetHit_Implementation(const FVector& hitImpactPoint, AActor* hitter
 	if(equipWeapon)	HandleCollisionForWeaponBoxCollider(ECollisionEnabled::NoCollision);
 	DrawDebugSphere( GetWorld(), hitImpactPoint, 10.f, 16, FColor::Black, false, 3.f);
 	UE_LOG(LogTemp, Warning, TEXT("GetHitFunction, enemy "));
+	if (IsInsideAttackRadius() && !IsDead()) {
+		StartAttackTimer();
+
+	}
 	
 }
 
@@ -211,6 +215,7 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		combatTarget = EventInstigator->GetPawn();
 		if (IsInsideAttackRadius()) {
 			currentEnemyState = EEnemyState::EES_Attacking;
+
 		}else StartChasing();
 	}
 	
@@ -276,7 +281,7 @@ void AEnemy::StartChasing()
 		return;// this wil make sure enemy wont chase while attacking and no foot sliding
 	}
 	currentEnemyState = EEnemyState::EES_Chasing;
-	GetCharacterMovement()->MaxWalkSpeed = 300.f;
+	GetCharacterMovement()->MaxWalkSpeed = chaseSpeed;
 	MoveToTarget(combatTarget);
 }
 
@@ -325,9 +330,9 @@ bool AEnemy::IsDead()
 }
 
 
-void AEnemy::OnDeath()
+void AEnemy::OnDeath_Implementation()
 {
-	Super::OnDeath();
+	Super::OnDeath_Implementation();
 	currentEnemyState = EEnemyState::EES_Dead;
 	ClearTimer(AttackTimer);
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
@@ -344,9 +349,11 @@ void AEnemy::SpawnSoul()
 	if (soulClass)
 	{
 		UWorld* world = GetWorld();
-		ASoul* soul = (world->SpawnActor<ASoul>(soulClass, GetActorLocation(), GetActorRotation()));
+		FVector soulSpawnLocation = GetActorLocation() + FVector(0.f, 0.f, 75.f);
+		ASoul* soul = (world->SpawnActor<ASoul>(soulClass, soulSpawnLocation, GetActorRotation()));
 		if (attributeComp) {
 			soul->SetSoulValue(attributeComp->GetSoulCount());
+			soul->SetOwner(this);
 		}
 		ClearTimer(SpawnTimer);
 		

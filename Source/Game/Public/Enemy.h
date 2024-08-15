@@ -42,6 +42,8 @@ protected:
 	
 	UPROPERTY(EditAnywhere)
 	float chaseRadius = 600;
+	UPROPERTY(EditAnywhere)
+	float chaseSpeed=300.f;
 
 	UPROPERTY(EditAnywhere)
 	float attackRadius = 150;
@@ -88,7 +90,7 @@ public:
 private:
 	
 
-	void OnDeath() override;
+	void OnDeath_Implementation() override;
 
 	
 

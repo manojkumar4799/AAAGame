@@ -349,9 +349,11 @@ void AEnemy::SpawnSoul()
 	if (soulClass)
 	{
 		UWorld* world = GetWorld();
-		ASoul* soul = (world->SpawnActor<ASoul>(soulClass, GetActorLocation(), GetActorRotation()));
+		FVector soulSpawnLocation = GetActorLocation() + FVector(0.f, 0.f, 75.f);
+		ASoul* soul = (world->SpawnActor<ASoul>(soulClass, soulSpawnLocation, GetActorRotation()));
 		if (attributeComp) {
 			soul->SetSoulValue(attributeComp->GetSoulCount());
+			soul->SetOwner(this);
 		}
 		ClearTimer(SpawnTimer);
 		
